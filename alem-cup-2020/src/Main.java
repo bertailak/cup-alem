@@ -1,8 +1,10 @@
+
 import java.io.*;
 import java.util.*;
 
 public class Main {
 
+    static boolean istest = true;
     static int[] dx = {-1, 0, 1, 0, 0};
     static int[] dy = {0, 1, 0, -1, 0};
     static int ROW;
@@ -121,6 +123,17 @@ public class Main {
                 endY = endY + dy[minIndex];
             }
         }
+
+        if (istest) {
+            System.out.println((endX) + " " + (endY));
+            for (int i = 0; i < ROW; i++) {
+                for (int j = 0; j < COL; j++) {
+                    System.out.print(dist[i][j] == Integer.MAX_VALUE ? "INF " : dist[i][j] + " ");
+                }
+                System.out.println();
+            }
+        }
+
         return direction;
     }
 
@@ -183,10 +196,11 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
-
         String actions[] = {"down", "up", "left", "right", "stay", "bomb"};
-//        Scanner scan = new Scanner(System.in);
-        Scanner scan = new Scanner(new File("input.txt"));
+        Scanner scan = new Scanner(System.in);
+        if (istest) {
+            scan = new Scanner(new File("input.txt"));
+        }
 
         while (true) {
             int player_id, tick, n, p_id, x, y, param_1, param_2;
@@ -197,7 +211,9 @@ public class Main {
             player_id = scan.nextInt();
             tick = scan.nextInt();
             str = scan.nextLine();
-//            System.err.println(ROW + " " + COL + " " + player_id + " " + tick);
+            if (!istest) {
+                System.err.println(COL + " " +ROW + " " +  player_id + " " + tick);
+            }
 
             Cell pl = new Cell(0, 0, 0);
             Cell r = new Cell(ROW - 1, COL - 1, 0);
@@ -206,7 +222,9 @@ public class Main {
 
             for (int i = 0; i < ROW; i++) {
                 str = scan.nextLine();
-                System.err.println(str);
+                if (!istest) {
+                    System.err.println(str);
+                }
                 for (int j = 0; j < str.length(); j++) {
                     chars[i][j] = str.charAt(j);
                     if (chars[i][j] == place) {
@@ -220,22 +238,24 @@ public class Main {
             }
             n = scan.nextInt();
 
-            System.err.println("n:" + n);
+            if (!istest) {
+                System.err.println(n);
+            }
 
             type = scan.nextLine();
 
             for (int i = 0; i < n; i++) {
                 type = scan.next();
                 p_id = scan.nextInt();
-                x = scan.nextInt();
                 y = scan.nextInt();
+                x = scan.nextInt();
                 param_1 = scan.nextInt();
                 param_2 = scan.nextInt();
                 if (type.equals("p")) {
                     if (player_id == p_id) {
                         pl = new Cell(x, y, 0);
                     } else {
-                        chars[x][y] = wall;
+                        chars[x][y] = brick;
                     }
                 } else if (type.equals("r")) {
                     r = new Cell(x, y, 0);
@@ -256,10 +276,10 @@ public class Main {
                         }
                     }
                 }
-                System.err.println(type + " " + p_id + " " + x + " " + y + " " + param_1 + " " + param_2);
+                if (!istest) {
+                    System.err.println(type + " " + p_id + " " + x + " " + y + " " + param_1 + " " + param_2);
+                }
             }
-
-            System.err.println(pl.x + ", " + pl.y);
 
             if (chars[pl.x][pl.y] == bomb) {
                 r = escape(chars, pl.x, pl.y);
@@ -270,9 +290,11 @@ public class Main {
                 direction = 5;
             }
 
-            System.err.println(direction);
+            //System.err.println(direction);
             System.out.println(actions[direction]);
-            break;
+            if (istest) {
+                break;
+            }
         }
     }
 }
