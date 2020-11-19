@@ -24,11 +24,13 @@ public class Main {
         int x;
         int y;
         int distance;
+        int bomb;
 
-        Cell(int x, int y, int distance) {
+        Cell(int x, int y, int distance, int bomb) {
             this.x = x;
             this.y = y;
             this.distance = distance;
+            this.bomb = bomb;
         }
     }
 
@@ -72,7 +74,7 @@ public class Main {
         PriorityQueue<Cell> pq = new PriorityQueue<Cell>(
                 (ROW) * (COL), new distanceComparator());
 
-        pq.add(new Cell(startX, startY, dist[startX][startY]));
+        pq.add(new Cell(startX, startY, dist[startX][startY], 0));
         while (!pq.isEmpty()) {
             Cell curr = pq.poll();
             for (int i = 0; i < 4; i++) {
@@ -86,7 +88,7 @@ public class Main {
 
                         if (dist[rows][cols] != Integer.MAX_VALUE) {
                             Cell adj = new Cell(rows, cols,
-                                    dist[rows][cols]);
+                                    dist[rows][cols], 0);
 
                             pq.remove(adj);
                         }
@@ -94,7 +96,7 @@ public class Main {
                                 + grid[rows][cols];
 
                         pq.add(new Cell(rows, cols,
-                                dist[rows][cols]));
+                                dist[rows][cols], 0));
                     }
                 }
             }
@@ -107,7 +109,9 @@ public class Main {
             for (int i = 0; i < 4; i++) {
                 int rows = endX + dx[i];
                 int cols = endY + dy[i];
-                if (isInsideGrid(rows, cols) && dist[rows][cols] < dist[endX + dx[minIndex]][endY + dy[minIndex]]) {
+                if (isInsideGrid(rows, cols)
+                        && dist[rows][cols] < dist[endX + dx[minIndex]][endY + dy[minIndex]]
+                        || (startX == endX + dx[i] && startY == endY + dy[i])) {
                     minIndex = i;
                 }
             }
@@ -123,6 +127,12 @@ public class Main {
             }
         }
 
+        printMapint(dist, endX, endY);
+
+        return direction;
+    }
+
+    static void printMapint(int[][] dist, int endX, int endY) {
         if (istest) {
             System.out.println((endX) + " " + (endY));
             for (int i = 0; i < ROW; i++) {
@@ -132,8 +142,17 @@ public class Main {
                 System.out.println();
             }
         }
+    }
 
-        return direction;
+    static void printMapbool(char[][] dist) {
+        if (istest) {
+            for (int i = 0; i < ROW; i++) {
+                for (int j = 0; j < COL; j++) {
+                    System.out.print(dist[i][j] + " \t");
+                }
+                System.out.println();
+            }
+        }
     }
 
     static Cell escape(char[][] grid, int startX,
@@ -191,7 +210,7 @@ public class Main {
                 break;
             }
         }
-        return new Cell(row, col, 0);
+        return new Cell(row, col, 0, 0);
     }
 
     public static void main(String[] args) throws Exception {
@@ -214,8 +233,8 @@ public class Main {
                 System.err.println(COL + " " + ROW + " " + player_id + " " + tick);
             }
 
-            Cell pl = new Cell(0, 0, 0);
-            Cell r = new Cell(ROW - 1, COL - 1, 0);
+            Cell pl = new Cell(0, 0, 0, 0);
+            Cell r = new Cell(ROW - 1, COL - 1, 0, 0);
             int[][] grid = new int[ROW][COL];
             chars = new char[ROW][COL];
 
@@ -252,25 +271,25 @@ public class Main {
                 param_2 = scan.nextInt();
                 if (type.equals("p")) {
                     if (player_id == p_id) {
-                        pl = new Cell(x, y, 0);
+                        pl = new Cell(x, y, 0, param_1);
                     } else {
                         chars[x][y] = brick;
                     }
                 } else if (type.equals("r")) {
-                    r = new Cell(x, y, 0);
+                    r = new Cell(x, y, 0, 0);
                 } else if (type.equals("b")) {
                     chars[x][y] = bomb;
                     for (int j = 1; j <= param_2 + 1 - param_1; j++) {
-                        if (isInside(x + j, y)) {
+                        if (isInside(x + j, y) && chars[x + j][y] == place) {
                             chars[x + j][y] = bomb;
                         }
-                        if (isInside(x - j, y)) {
+                        if (isInside(x - j, y) && chars[x - j][y] == place) {
                             chars[x - j][y] = bomb;
                         }
-                        if (isInside(x, y + j)) {
+                        if (isInside(x, y + j) && chars[x][y + j] == place) {
                             chars[x][y + j] = bomb;
                         }
-                        if (isInside(x, y - j)) {
+                        if (isInside(x, y - j) && chars[x][y - j] == place) {
                             chars[x][y - j] = bomb;
                         }
                     }
@@ -280,12 +299,17 @@ public class Main {
                 }
             }
 
+            printMapbool(chars);
             if (chars[pl.x][pl.y] == bomb) {
                 r = escape(chars, pl.x, pl.y);
+                if (istest) {
+                    System.out.println("portal: " + r.x + " " + r.y);
+                }
             }
 
             int direction = shortestPath(grid, pl.x, pl.y, r.x, r.y);
-            if (chars[pl.x - dx[direction]][pl.y - dy[direction]] == brick) {
+            if (chars[pl.x - dx[direction]][pl.y - dy[direction]] == brick
+                    && pl.bomb > 0) {
                 direction = 5;
             }
 
