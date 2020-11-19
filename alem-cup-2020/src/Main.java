@@ -4,7 +4,6 @@ import java.util.*;
 
 public class Main {
 
-    static boolean istest = true;
     static int[] dx = {-1, 0, 1, 0, 0};
     static int[] dy = {0, 1, 0, -1, 0};
     static int ROW;
@@ -128,7 +127,7 @@ public class Main {
             System.out.println((endX) + " " + (endY));
             for (int i = 0; i < ROW; i++) {
                 for (int j = 0; j < COL; j++) {
-                    System.out.print(dist[i][j] == Integer.MAX_VALUE ? "INF " : dist[i][j] + " ");
+                    System.out.print((dist[i][j] == Integer.MAX_VALUE ? "INF" : dist[i][j]) + " \t");
                 }
                 System.out.println();
             }
@@ -212,7 +211,7 @@ public class Main {
             tick = scan.nextInt();
             str = scan.nextLine();
             if (!istest) {
-                System.err.println(COL + " " +ROW + " " +  player_id + " " + tick);
+                System.err.println(COL + " " + ROW + " " + player_id + " " + tick);
             }
 
             Cell pl = new Cell(0, 0, 0);
@@ -277,7 +276,7 @@ public class Main {
                     }
                 }
                 if (!istest) {
-                    System.err.println(type + " " + p_id + " " + x + " " + y + " " + param_1 + " " + param_2);
+                    System.err.println(type + " " + p_id + " " + y + " " + x + " " + param_1 + " " + param_2);
                 }
             }
 
@@ -290,11 +289,13 @@ public class Main {
                 direction = 5;
             }
 
-            //System.err.println(direction);
             System.out.println(actions[direction]);
             if (istest) {
                 break;
+            } else {
+                System.err.println(actions[direction]);
             }
         }
     }
+    static boolean istest = true;
 }
