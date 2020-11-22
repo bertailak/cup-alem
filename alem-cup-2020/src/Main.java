@@ -358,6 +358,14 @@ public class Main {
                     }
                 } else if (type.equals("b")) {
                     chars[x][y] = bomb;
+                    for (int k = 1; k <= param_2 + 1 - param_1; k++) {
+                        for (int j = 0; j < dx.length; j++) {
+                            if (isInsideGrid(x + dx[j] * k, y + dy[j] * k)
+                                    && chars[x + dx[j] * k][y + dy[j] * k] != brick) {
+                                chars[x + dx[j] * k][y + dy[j] * k] = bomb;
+                            }
+                        }
+                    }
                 }
                 if (!istest) {
                     System.err.println(type + " " + p_id + " " + y + " " + x + " " + param_1 + " " + param_2);
