@@ -49,6 +49,65 @@ public class Main {
         }
     }
 
+    static boolean isSafePos(int i, int j) {
+        boolean res = true;
+        if (isInside(i, j)) {
+            if (chars[i][j] == bomb) {
+                res = false;
+            }
+        }
+        if (isInside(i - 2, j)) {
+            if (chars[i - 2][j] == bomb
+                    || chars[i - 2][j] == monster) {
+                res = false;
+            }
+        }
+        if (isInside(i - 1, j)) {
+            if (chars[i - 1][j] == bomb
+                    || chars[i - 1][j] == monster) {
+                res = false;
+            }
+        }
+        if (isInside(i, j - 2)) {
+            if (chars[i][j - 2] == bomb
+                    || chars[i][j - 2] == monster) {
+                res = false;
+            }
+        }
+        if (isInside(i, j - 1)) {
+            if (chars[i][j - 1] == bomb
+                    || chars[i][j - 1] == monster) {
+                res = false;
+            }
+        }
+        if (isInside(i + 1, j)) {
+            if (chars[i + 1][j] == bomb
+                    || chars[i + 1][j] == monster) {
+                res = false;
+            }
+        }
+        if (isInside(i + 2, j)) {
+            if (chars[i + 2][j] == bomb
+                    || chars[i + 2][j] == monster) {
+                res = false;
+            }
+        }
+        if (isInside(i, j + 1)) {
+            if (chars[i][j + 1] == bomb
+                    || chars[i][j + 1] == monster) {
+                res = false;
+            }
+        }
+        if (isInside(i, j + 2)) {
+            if (chars[i][j + 2] == bomb
+                    || chars[i][j + 2] == monster) {
+                res = false;
+            }
+        }
+
+        return res;
+    }
+
     static boolean isInsideGrid(int i, int j) {
         return (isInside(i, j)
                 && chars[i][j] != bomb
@@ -151,7 +210,7 @@ public class Main {
         }
     }
 
-    static void printMapbool(char[][] dist) {
+    static void printMapchar(char[][] dist) {
         if (istest) {
             for (int i = 0; i < ROW; i++) {
                 for (int j = 0; j < COL; j++) {
@@ -162,61 +221,67 @@ public class Main {
         }
     }
 
+    static void printMapbool(boolean[][] dist) {
+        if (istest) {
+            for (int i = 0; i < ROW; i++) {
+                for (int j = 0; j < COL; j++) {
+                    System.out.print((dist[i][j] ? 1 : 0) + " \t");
+                }
+                System.out.println();
+            }
+        }
+        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+    }
+
     static Cell escape(char[][] grid, int startX,
             int startY, char aim) {
 
         int row = startX;
         int col = startY;
+        boolean finded = false;
+        boolean[][] visited = new boolean[ROW][COL];
 
-        int rad = Math.abs(ROW - startX) + Math.abs(COL - startY);
+        LinkedList<Cell> queue = new LinkedList<Cell>();
+        queue.add(new Cell(startX, startY, 0, 0));
+        visited[startX][startY] = true;
 
-        for (int i = 1; i <= rad; i++) {
-            for (int j = 0; j <= i / 2 + i % 2; j++) {
-                if (isInsideGrid(startX + j, startY - i + j) && grid[startX + j][startY - i + j] == aim) {
-                    row = startX + j;
-                    col = startY - i + j;
-                    break;
+        while (queue.size() > 0) {
+            if (istest) {
+                for (int i = 0; i < queue.size(); i++) {
+                    Cell c2 = queue.get(i);
+                    System.out.print(c2.x + ":" + c2.y + "; ");
                 }
-                if (isInsideGrid(startX + j, startY + i - j) && grid[startX + j][startY + i - j] == aim) {
-                    row = startX + j;
-                    col = startY + i - j;
-                    break;
-                }
-                if (isInsideGrid(startX + i - j, startY + j) && grid[startX + i - j][startY + j] == aim) {
-                    row = startX + i - j;
-                    col = startY + j;
-                    break;
-                }
-                if (isInsideGrid(startX + i - j, startY - j) && grid[startX + i - j][startY - j] == aim) {
-                    row = startX + i - j;
-                    col = startY - j;
-                    break;
-                }
-                if (isInsideGrid(startX - j, startY - i + j) && grid[startX - j][startY - i + j] == aim) {
-                    row = startX - j;
-                    col = startY - i + j;
-                    break;
-                }
-                if (isInsideGrid(startX - j, startY + i - j) && grid[startX - j][startY + i - j] == aim) {
-                    row = startX - j;
-                    col = startY + i - j;
-                    break;
-                }
-                if (isInsideGrid(startX - i + j, startY - j) && grid[startX - i + j][startY - j] == aim) {
-                    row = startX - i + j;
-                    col = startY - j;
-                    break;
-                }
-                if (isInsideGrid(startX - i + j, startY + j) && grid[startX - i + j][startY + j] == aim) {
-                    row = startX - i + j;
-                    col = startY + j;
-                    break;
+                System.out.println();
+                printMapbool(visited);
+            }
+            Cell c = queue.poll();
+            if (aim == brick && chars[c.x][c.y] == brick) {
+                row = c.x;
+                col = c.y;
+                finded = true;
+                break;
+            } else if (aim == place && isSafePos(c.x, c.y)
+                    && chars[c.x][c.y] != brick) {
+                row = c.x;
+                col = c.y;
+                finded = true;
+                break;
+            }
+            for (int i = 0; i < dx.length; i++) {
+                if (isInsideGrid(c.x + dx[i], c.y + dy[i])
+                        && !visited[c.x + dx[i]][c.y + dy[i]]) {
+                    if ((aim == brick || (aim == place
+                            && chars[c.x + dx[i]][c.y + dy[i]] != brick))) {
+                        queue.add(new Cell(c.x + dx[i], c.y + dy[i], 0, 0));
+                        visited[c.x + dx[i]][c.y + dy[i]] = true;
+                    }
                 }
             }
-            if (row != startX || col != startY) {
+            if (finded) {
                 break;
             }
         }
+
         return new Cell(row, col, 0, 0);
     }
 
@@ -286,50 +351,16 @@ public class Main {
                     r = new Cell(x, y, 0, 0);
                 } else if (type.equals("m")) {
                     chars[x][y] = monster;
-                    int monsterValue = 2;
-                    grid[x][y] += monsterValue;
-                    for (int j = 1; j <= 2; j++) {
-                        if (isInside(x + j, y) && chars[x + j][y] == place) {
-                            chars[x + j][y] = monster;
-                            grid[x + j][y] += monsterValue;
-                        }
-                        if (isInside(x - j, y) && chars[x - j][y] == place) {
-                            chars[x - j][y] = monster;
-                            grid[x - j][y] += monsterValue;
-                        }
-                        if (isInside(x, y + j) && chars[x][y + j] == place) {
-                            chars[x][y + j] = monster;
-                            grid[x][y + j] += monsterValue;
-                        }
-                        if (isInside(x, y - j) && chars[x][y - j] == place) {
-                            chars[x][y - j] = monster;
-                            grid[x][y - j] += monsterValue;
-                        }
-                    }
                 } else if (type.equals("b")) {
                     chars[x][y] = bomb;
-                    for (int j = 1; j <= param_2 + 2 - param_1; j++) {
-                        if (isInside(x + j, y) && chars[x + j][y] == place) {
-                            chars[x + j][y] = bomb;
-                        }
-                        if (isInside(x - j, y) && chars[x - j][y] == place) {
-                            chars[x - j][y] = bomb;
-                        }
-                        if (isInside(x, y + j) && chars[x][y + j] == place) {
-                            chars[x][y + j] = bomb;
-                        }
-                        if (isInside(x, y - j) && chars[x][y - j] == place) {
-                            chars[x][y - j] = bomb;
-                        }
-                    }
                 }
                 if (!istest) {
                     System.err.println(type + " " + p_id + " " + y + " " + x + " " + param_1 + " " + param_2);
                 }
             }
 
-            printMapbool(chars);
-            if (chars[pl.x][pl.y] == bomb || chars[pl.x][pl.y] == monster) {
+            printMapchar(chars);
+            if (!isSafePos(pl.x, pl.y)) {
                 r = escape(chars, pl.x, pl.y, place);
                 if (istest) {
                     System.out.println("portal: " + r.x + " " + r.y);
@@ -342,8 +373,7 @@ public class Main {
             }
 
             int direction = shortestPath(grid, pl.x, pl.y, r.x, r.y);
-            if ((chars[pl.x - dx[direction]][pl.y - dy[direction]] == brick
-                    || chars[pl.x - dx[direction]][pl.y - dy[direction]] == monster)
+            if ((chars[pl.x - dx[direction]][pl.y - dy[direction]] == brick)
                     && pl.bomb > 0) {
                 direction = 5;
             }
