@@ -351,6 +351,11 @@ public class Main {
                     r = new Cell(x, y, 0, 0);
                 } else if (type.equals("m")) {
                     chars[x][y] = monster;
+                    for (int j = 0; j < dx.length; j++) {
+                        if (isInsideGrid(x + dx[j], y + dy[j]) && chars[x + dx[j]][y + dy[j]] != brick) {
+                            chars[x + dx[j]][y + dy[j]] = monster;
+                        }
+                    }
                 } else if (type.equals("b")) {
                     chars[x][y] = bomb;
                 }
@@ -376,6 +381,10 @@ public class Main {
             if ((chars[pl.x - dx[direction]][pl.y - dy[direction]] == brick)
                     && pl.bomb > 0) {
                 direction = 5;
+            } else {
+//                if (!isSafePos(pl.x - dx[direction], pl.y - dy[direction])) {
+//                    direction = 4;
+//                }
             }
 
             System.out.println(actions[direction]);
