@@ -181,7 +181,6 @@ public class Main {
         int[][] dist = getMinCostPath(grid, startX, startY, endX, endY);
         int direction = 4;
         while (true) {
-            int minn = Integer.MAX_VALUE;
             int minIndex = 4;
             for (int i = 0; i < 4; i++) {
                 int rows = endX + dx[i];
@@ -387,7 +386,11 @@ public class Main {
                     if (player_id == p_id) {
                         pl = new Cell(x, y, 0, param_1);
                     } else {
-                        chars[x][y] = brick;
+                        if (param_1 > 0) {
+                            chars[x][y] = monster;
+                        } else {
+                            chars[x][y] = brick;
+                        }
                     }
                 } else if (type.equals("r")) {
                     r = new Cell(x, y, 0, 0);
