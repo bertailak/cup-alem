@@ -96,6 +96,26 @@ public class Main {
                 res = false;
             }
         }
+        if (isInside(i + 1, j + 1)) {
+            if (chars[i + 1][j + 1] == monster) {
+                res = false;
+            }
+        }
+        if (isInside(i + 1, j - 1)) {
+            if (chars[i + 1][j - 1] == monster) {
+                res = false;
+            }
+        }
+        if (isInside(i - 1, j + 1)) {
+            if (chars[i - 1][j + 1] == monster) {
+                res = false;
+            }
+        }
+        if (isInside(i - 1, j - 1)) {
+            if (chars[i - 1][j - 1] == monster) {
+                res = false;
+            }
+        }
 
         return res;
     }
@@ -246,7 +266,12 @@ public class Main {
                 printMapbool(visited);
             }
             Cell c = queue.poll();
-            if (aim == monster && chars[c.x][c.y] == monster) {
+            if (aim == brick && (chars[c.x][c.y] == brick || chars[c.x][c.y] == monster)) {
+                row = c.x;
+                col = c.y;
+                finded = true;
+                break;
+            } else if (aim == monster && chars[c.x][c.y] == monster) {
                 row = c.x;
                 col = c.y;
                 finded = true;
@@ -263,7 +288,7 @@ public class Main {
             for (int i = 0; i < dx.length; i++) {
                 if (isInsideGrid(c.x + dx[i], c.y + dy[i])
                         && !visited[c.x + dx[i]][c.y + dy[i]]) {
-                    if ((aim == monster || (aim == place
+                    if ((aim == brick || aim == monster || (aim == place
                             && chars[c.x + dx[i]][c.y + dy[i]] != brick
                             && chars[c.x + dx[i]][c.y + dy[i]] != monster))) {
                         queue.add(new Cell(c.x + dx[i], c.y + dy[i], 0, 0));
@@ -279,6 +304,26 @@ public class Main {
         return new Cell(row, col, 0, 0);
     }
 
+    static void setBomb(int x, int y, int param_1, int param_2) {
+        chars[x][y] = bomb;
+        for (int j = 0; j < dx.length - 1; j++) {
+            for (int i = 1; i <= param_2 + 1 - param_1; i++) {
+                if (isInside(x + i * j * dx[j], y + i * j * dy[j])) {
+                    if (chars[x + i * j * dx[j]][y + i * j * dy[j]] != wall) {
+                        if (chars[x + i * j * dx[j]][y + i * j * dy[j]] == brick) {
+                            chars[x + i * j * dx[j]][y + i * j * dy[j]] = bomb;
+                            break;
+                        } else {
+                            chars[x + i * j * dx[j]][y + i * j * dy[j]] = bomb;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     public static void main(String[] args) throws Exception {
         String actions[] = {"down", "left", "up", "right", "stay", "bomb"};
         Scanner scan = new Scanner(System.in);
@@ -289,6 +334,8 @@ public class Main {
         while (true) {
             int player_id, tick, n, p_id, x, y, param_1, param_2;
             String str, type;
+
+            boolean hasBrick = false;
 
             COL = scan.nextInt();
             ROW = scan.nextInt();
@@ -315,6 +362,7 @@ public class Main {
                         grid[i][j] = 1;
                     } else if (chars[i][j] == brick) {
                         grid[i][j] = 10;
+                        hasBrick = true;
                     } else if (chars[i][j] == wall) {
                         grid[i][j] = Integer.MAX_VALUE;
                     }
@@ -345,7 +393,7 @@ public class Main {
                     r = new Cell(x, y, 0, 0);
                 } else if (type.equals("m")) {
                     chars[x][y] = monster;
-                    for (int k = 1; k <= 1; k++) {
+                    for (int k = 1; k <= 2; k++) {
                         for (int j = 0; j < dx.length; j++) {
                             if (isInsideGrid(x + dx[j] * k, y + dy[j] * k)
                                     && chars[x + dx[j] * k][y + dy[j] * k] != brick) {
@@ -372,15 +420,7 @@ public class Main {
                     }
 
                 } else if (type.equals("b")) {
-                    chars[x][y] = bomb;
-                    for (int k = 1; k <= param_2 + 1 - param_1; k++) {
-                        for (int j = 0; j < dx.length; j++) {
-                            if (isInsideGrid(x + dx[j] * k, y + dy[j] * k)
-                                    && chars[x + dx[j] * k][y + dy[j] * k] != brick) {
-                                chars[x + dx[j] * k][y + dy[j] * k] = bomb;
-                            }
-                        }
-                    }
+                    setBomb(x, y, param_1, param_2);
                 }
                 if (!istest) {
                     System.err.println(type + " " + p_id + " " + y + " " + x + " " + param_1 + " " + param_2);
@@ -394,7 +434,7 @@ public class Main {
                     System.out.println("portal: " + r.x + " " + r.y);
                 }
             } else if (r.x == 0 && r.y == 0) {
-                r = escape(chars, pl.x, pl.y, monster);
+                r = escape(chars, pl.x, pl.y, brick);
                 if (istest) {
                     System.out.println("brick: " + r.x + " " + r.y);
                 }
