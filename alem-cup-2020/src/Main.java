@@ -303,17 +303,17 @@ public class Main {
         return new Cell(row, col, 0, 0);
     }
 
-    static void setBomb(int x, int y, int param_1, int param_2) {
-        chars[x][y] = bomb;
+    static void setBomb(int x, int y, int perimeter, char elem) {
+        chars[x][y] = elem;
         for (int j = 0; j < dx.length - 1; j++) {
-            for (int i = 1; i <= param_2 + 1 - param_1; i++) {
-                if (isInside(x + i * j * dx[j], y + i * j * dy[j])) {
-                    if (chars[x + i * j * dx[j]][y + i * j * dy[j]] != wall) {
-                        if (chars[x + i * j * dx[j]][y + i * j * dy[j]] == brick) {
-                            chars[x + i * j * dx[j]][y + i * j * dy[j]] = bomb;
+            for (int i = 1; i <= perimeter; i++) {
+                if (isInside(x + i * dx[j], y + i * dy[j])) {
+                    if (chars[x + i * dx[j]][y + i * dy[j]] != wall && chars[x + i * dx[j]][y + i * dy[j]] != bomb) {
+                        if (chars[x + i * dx[j]][y + i * dy[j]] == brick) {
+                            chars[x + i * dx[j]][y + i * dy[j]] = elem;
                             break;
                         } else {
-                            chars[x + i * j * dx[j]][y + i * j * dy[j]] = bomb;
+                            chars[x + i * dx[j]][y + i * dy[j]] = elem;
                         }
                     } else {
                         break;
@@ -396,34 +396,26 @@ public class Main {
                     r = new Cell(x, y, 0, 0);
                 } else if (type.equals("m")) {
                     chars[x][y] = monster;
-                    for (int k = 1; k <= 2; k++) {
-                        for (int j = 0; j < dx.length; j++) {
-                            if (isInsideGrid(x + dx[j] * k, y + dy[j] * k)
-                                    && chars[x + dx[j] * k][y + dy[j] * k] != brick) {
-                                chars[x + dx[j] * k][y + dy[j] * k] = monster;
-                            }
-                            if (isInsideGrid(x + 1, y + 1)
-                                    && chars[x + 1][y + 1] != brick) {
-                                chars[x + 1][y + 1] = monster;
-                            }
-                            if (isInsideGrid(x + 1, y - 1)
-                                    && chars[x + 1][y - 1] != brick) {
-                                chars[x + 1][y - 1] = monster;
-                            }
-                            if (isInsideGrid(x - 1, y + 1)
-                                    && chars[x - 1][y + 1] != brick) {
-                                chars[x - 1][y + 1] = monster;
-                            }
-                            if (isInsideGrid(x - 1, y - 1)
-                                    && chars[x - 1][y - 1] != brick) {
-                                chars[x - 1][y - 1] = monster;
-                            }
-                        }
-
+                    setBomb(x, y, 2, monster);
+                    if (isInsideGrid(x + 1, y + 1)
+                            && chars[x + 1][y + 1] != brick) {
+                        chars[x + 1][y + 1] = monster;
+                    }
+                    if (isInsideGrid(x + 1, y - 1)
+                            && chars[x + 1][y - 1] != brick) {
+                        chars[x + 1][y - 1] = monster;
+                    }
+                    if (isInsideGrid(x - 1, y + 1)
+                            && chars[x - 1][y + 1] != brick) {
+                        chars[x - 1][y + 1] = monster;
+                    }
+                    if (isInsideGrid(x - 1, y - 1)
+                            && chars[x - 1][y - 1] != brick) {
+                        chars[x - 1][y - 1] = monster;
                     }
 
                 } else if (type.equals("b")) {
-                    setBomb(x, y, param_1, param_2);
+                    setBomb(x, y, param_2 + 1 - param_1, bomb);
                 }
                 if (!istest) {
                     System.err.println(type + " " + p_id + " " + y + " " + x + " " + param_1 + " " + param_2);
