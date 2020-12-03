@@ -375,7 +375,7 @@ public class Main {
                 } else if (type.equals("b")) {
                     chars[x][y] = wall;
                     setBomb(x, y, param_2 + 1, bomb);
-                    setBomb(x, y, param_2 - param_1, wall);
+                    setBomb(x, y, Math.min(param_2, 5) - param_1, wall);
                 }
                 if (!istest) {
                     System.err.println(type + " " + p_id + " " + y + " " + x + " " + param_1 + " " + param_2);
