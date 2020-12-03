@@ -51,51 +51,10 @@ public class Main {
 
     static boolean isSafePos(int i, int j) {
         boolean res = true;
-        if (isInside(i, j)) {
-            if (chars[i][j] == bomb) {
-                res = false;
-            }
+        if (chars[i][j] == bomb || chars[i][j] == wall) {
+            res = false;
         }
-        if (isInside(i - 2, j)) {
-            if (chars[i - 2][j] == bomb) {
-                res = false;
-            }
-        }
-        if (isInside(i - 1, j)) {
-            if (chars[i - 1][j] == bomb) {
-                res = false;
-            }
-        }
-        if (isInside(i, j - 2)) {
-            if (chars[i][j - 2] == bomb) {
-                res = false;
-            }
-        }
-        if (isInside(i, j - 1)) {
-            if (chars[i][j - 1] == bomb) {
-                res = false;
-            }
-        }
-        if (isInside(i + 1, j)) {
-            if (chars[i + 1][j] == bomb) {
-                res = false;
-            }
-        }
-        if (isInside(i + 2, j)) {
-            if (chars[i + 2][j] == bomb) {
-                res = false;
-            }
-        }
-        if (isInside(i, j + 1)) {
-            if (chars[i][j + 1] == bomb) {
-                res = false;
-            }
-        }
-        if (isInside(i, j + 2)) {
-            if (chars[i][j + 2] == bomb) {
-                res = false;
-            }
-        }
+
         if (isInside(i + 1, j + 1)) {
             if (chars[i + 1][j + 1] == monster) {
                 res = false;
@@ -153,7 +112,7 @@ public class Main {
                 int rows = curr.x + dx[i];
                 int cols = curr.y + dy[i];
 
-                if (isInside(rows, cols) && chars[rows][cols]!=wall) {
+                if (isInside(rows, cols) && chars[rows][cols] != wall) {
                     if (dist[rows][cols]
                             > dist[curr.x][curr.y]
                             + grid[rows][cols]) {
@@ -185,7 +144,7 @@ public class Main {
             for (int i = 0; i < 4; i++) {
                 int rows = endX + dx[i];
                 int cols = endY + dy[i];
-                if (isInside(rows, cols) && chars[rows][cols]!=wall
+                if (isInside(rows, cols) && chars[rows][cols] != wall
                         && dist[rows][cols] < dist[endX + dx[minIndex]][endY + dy[minIndex]]
                         || (startX == endX + dx[i] && startY == endY + dy[i])) {
                     minIndex = i;
@@ -307,7 +266,7 @@ public class Main {
         for (int j = 0; j < dx.length - 1; j++) {
             for (int i = 1; i <= perimeter; i++) {
                 if (isInside(x + i * dx[j], y + i * dy[j])) {
-                    if (chars[x + i * dx[j]][y + i * dy[j]] != brick &&chars[x + i * dx[j]][y + i * dy[j]] != wall && chars[x + i * dx[j]][y + i * dy[j]] != bomb) {
+                    if (chars[x + i * dx[j]][y + i * dy[j]] != brick && chars[x + i * dx[j]][y + i * dy[j]] != wall) {
                         if (chars[x + i * dx[j]][y + i * dy[j]] == brick) {
                             chars[x + i * dx[j]][y + i * dy[j]] = elem;
                             break;
@@ -383,13 +342,13 @@ public class Main {
                 param_2 = scan.nextInt();
                 if (type.equals("p")) {
                     if (player_id == p_id) {
-                        pl = new Cell(x, y, 0, param_1);
+                        pl = new Cell(x, y, param_2, param_1);
                     } else {
-//                        if (param_1 > 0) {
-//                            chars[x][y] = monster;
-//                        } else {
-//                            chars[x][y] = brick;
-//                        }
+                        if (param_1 > 0) {
+                            chars[x][y] = brick;
+                        } else {
+                            chars[x][y] = brick;
+                        }
                     }
                 } else if (type.equals("r")) {
                     r = new Cell(x, y, 0, 0);
@@ -415,7 +374,8 @@ public class Main {
 
                 } else if (type.equals("b")) {
                     chars[x][y] = wall;
-                    setBomb(x, y, param_2, bomb);
+                    setBomb(x, y, param_2 + 1, bomb);
+                    setBomb(x, y, param_2 - param_1, wall);
                 }
                 if (!istest) {
                     System.err.println(type + " " + p_id + " " + y + " " + x + " " + param_1 + " " + param_2);
@@ -423,7 +383,7 @@ public class Main {
             }
 
             printMapchar(chars);
-            if (!isSafePos(pl.x, pl.y) || pl.bomb == 0) {
+            if (!isSafePos(pl.x, pl.y)) {
                 r = escape(chars, pl.x, pl.y, place);
                 if (istest) {
                     System.out.println("portal: " + r.x + " " + r.y);
