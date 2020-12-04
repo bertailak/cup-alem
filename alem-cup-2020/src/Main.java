@@ -15,11 +15,6 @@ public class Main {
     static char bomb = 'b';
     static char monster = 'm';
 
-//    static char[][] chars = {{'b', 'b', 'b', 'b', 'b'},
-//    {'b', 'b', 'b', 'b', 'b'},
-//    {'b', 'b', 'b', 'b', 'b'},
-//    {'b', 'b', 'b', 'b', 'b'},
-//    {'.', 'b', 'b', 'b', 'b'}};
     static class Cell {
 
         int x;
@@ -331,6 +326,8 @@ public class Main {
                 System.err.println(n);
             }
 
+            ArrayList<Cell> bombs = new ArrayList<Cell>();
+            ArrayList<Cell> players = new ArrayList<Cell>();
             type = scan.nextLine();
 
             for (int i = 0; i < n; i++) {
@@ -344,11 +341,7 @@ public class Main {
                     if (player_id == p_id) {
                         pl = new Cell(x, y, param_2, param_1);
                     } else {
-                        if (param_1 > 0) {
-                            chars[x][y] = brick;
-                        } else {
-                            chars[x][y] = brick;
-                        }
+                        players.add(new Cell(x, y, 0, 0));
                     }
                 } else if (type.equals("r")) {
                     r = new Cell(x, y, 0, 0);
@@ -373,13 +366,19 @@ public class Main {
                     }
 
                 } else if (type.equals("b")) {
-                    chars[x][y] = wall;
-                    setBomb(x, y, param_2 + 1, bomb);
-                    setBomb(x, y, Math.min(param_2, 4) + 1 - param_1, wall);
+                    bombs.add(new Cell(x, y, param_2, param_1));
                 }
                 if (!istest) {
                     System.err.println(type + " " + p_id + " " + y + " " + x + " " + param_1 + " " + param_2);
                 }
+            }
+            for (Cell b : bombs) {
+                chars[b.x][b.y] = wall;
+                setBomb(b.x, b.y, b.distance + 1, bomb);
+                setBomb(b.x, b.y, Math.min(b.distance, 4) + 1 - b.bomb, wall);
+            }
+            for (Cell player : players) {
+                chars[player.x][player.y] = brick;
             }
 
             printMapchar(chars);
@@ -398,6 +397,7 @@ public class Main {
             int direction = shortestPath(grid, pl.x, pl.y, r.x, r.y);
             if ((chars[pl.x - dx[direction]][pl.y - dy[direction]] == brick
                     || chars[pl.x - dx[direction]][pl.y - dy[direction]] == monster)
+                    && chars[pl.x][pl.y] != bomb
                     && pl.bomb > 0) {
                 direction = 5;
             } else {
