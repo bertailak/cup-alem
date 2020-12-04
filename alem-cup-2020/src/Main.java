@@ -197,6 +197,72 @@ public class Main {
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
     }
 
+    static Cell getManyBrick(char[][] grid, Cell pl) {
+        int[][] volume = new int[ROW][COL];
+
+        for (int i = 0; i < ROW; i++) {
+            for (int j = 0; j < COL; j++) {
+                if (chars[i][j] == place) {
+                    volume[i][j] = 1000;
+                    for (int k = 0; k < dx.length - 1; k++) {
+                        for (int l = 1; l <= pl.distance; l++) {
+                            if (isInside(i + dx[k] * l, j + dy[k] * l)) {
+                                if (chars[i + dx[k] * l][j + dy[k] * l] == brick) {
+                                    volume[i][j] -= 40;
+                                    break;
+                                } else if (chars[i + dx[k] * l][j + dy[k] * l] == wall) {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+//        if (volume[pl.x][pl.y] == 0) {
+//            volume[pl.x][pl.y] = Integer.MAX_VALUE;
+//        }
+        int row = pl.x;
+        int col = pl.y;
+        boolean finded = false;
+        boolean[][] visited = new boolean[ROW][COL];
+
+        LinkedList<Cell> queue = new LinkedList<Cell>();
+        queue.add(new Cell(pl.x, pl.y, 0, 0));
+        visited[pl.x][pl.y] = true;
+
+        int iter = -1;
+        while (queue.size() > 0) {
+            iter++;
+            Cell c = queue.poll();
+            if (istest) {
+                for (int i = 0; i < queue.size(); i++) {
+                    Cell c2 = queue.get(i);
+                    System.out.print(c2.x + ":" + c2.y + "; ");
+                }
+                System.out.println();
+                printMapint(volume, c.x, c.y);
+            }
+            if (volume[c.x][c.y] != 0) {
+                volume[c.x][c.y] += iter / 4;
+            }
+            if (volume[c.x][c.y] < volume[row][col]) {
+                row = c.x;
+                col = c.y;
+            }
+            for (int i = 0; i < dx.length; i++) {
+                if (isInside(c.x + dx[i], c.y + dy[i])
+                        && chars[c.x + dx[i]][c.y + dy[i]] == place
+                        && !visited[c.x + dx[i]][c.y + dy[i]]) {
+                    queue.add(new Cell(c.x + dx[i], c.y + dy[i], 0, 0));
+                    visited[c.x + dx[i]][c.y + dy[i]] = true;
+                }
+            }
+        }
+
+        return new Cell(row, col, 0, 0);
+    }
+
     static Cell escape(char[][] grid, int startX,
             int startY, char aim) {
 
@@ -377,9 +443,9 @@ public class Main {
                 setBomb(b.x, b.y, b.distance + 1, bomb);
                 setBomb(b.x, b.y, Math.min(b.distance, 4) + 1 - b.bomb, wall);
             }
-            for (Cell player : players) {
-                chars[player.x][player.y] = brick;
-            }
+//            for (Cell player : players) {
+//                chars[player.x][player.y] = brick;
+//            }
 
             printMapchar(chars);
             if (!isSafePos(pl.x, pl.y)) {
@@ -388,24 +454,29 @@ public class Main {
                     System.out.println("portal: " + r.x + " " + r.y);
                 }
             } else if (r.x == 0 && r.y == 0) {
-                r = escape(chars, pl.x, pl.y, brick);
+                r = getManyBrick(chars, pl);
                 if (istest) {
                     System.out.println("brick: " + r.x + " " + r.y);
                 }
             }
 
             int direction = shortestPath(grid, pl.x, pl.y, r.x, r.y);
-            if ((chars[pl.x - dx[direction]][pl.y - dy[direction]] == brick
-                    || chars[pl.x - dx[direction]][pl.y - dy[direction]] == monster)
-                    && chars[pl.x][pl.y] != bomb
-                    && pl.bomb > 0) {
-                direction = 5;
+            if (pl.x == r.x && pl.y == r.y) {
+                if (pl.bomb > 0) {
+                    direction = 5;
+                }
             } else {
+                if ((chars[pl.x - dx[direction]][pl.y - dy[direction]] == brick
+                        || chars[pl.x - dx[direction]][pl.y - dy[direction]] == monster)
+                        && chars[pl.x][pl.y] != bomb
+                        && pl.bomb > 0) {
+                    direction = 5;
+                } else {
 //                if (!isSafePos(pl.x - dx[direction], pl.y - dy[direction])) {
 //                    direction = 4;
 //                }
+                }
             }
-
             System.out.println(actions[direction]);
             if (istest) {
                 break;
