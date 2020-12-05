@@ -327,9 +327,9 @@ public class Main {
         for (int j = 0; j < dx.length - 1; j++) {
             for (int i = 1; i <= perimeter; i++) {
                 if (isInside(x + i * dx[j], y + i * dy[j])) {
-                    if (chars[x + i * dx[j]][y + i * dy[j]] != brick && chars[x + i * dx[j]][y + i * dy[j]] != wall) {
+                    if (chars[x + i * dx[j]][y + i * dy[j]] != wall) {
                         if (chars[x + i * dx[j]][y + i * dy[j]] == brick) {
-                            chars[x + i * dx[j]][y + i * dy[j]] = elem;
+                            chars[x + i * dx[j]][y + i * dy[j]] = wall;
                             break;
                         } else {
                             chars[x + i * dx[j]][y + i * dy[j]] = elem;
@@ -441,7 +441,9 @@ public class Main {
             for (Cell b : bombs) {
                 chars[b.x][b.y] = wall;
                 setBomb(b.x, b.y, b.distance + 1, bomb);
-                setBomb(b.x, b.y, Math.min(b.distance, 4) + 1 - b.bomb, wall);
+                if (!(b.x == pl.x && b.y == pl.y)) {
+                    setBomb(b.x, b.y, Math.min(b.distance, 4) + 1 - b.bomb, wall);
+                }
             }
 //            for (Cell player : players) {
 //                chars[player.x][player.y] = brick;
