@@ -14,6 +14,7 @@ public class Main {
     static char brick = ';';
     static char bomb = 'b';
     static char monster = 'm';
+    static String features = "";
 
     static class Cell {
 
@@ -119,7 +120,7 @@ public class Main {
                             pq.remove(adj);
                         }
                         dist[rows][cols] = dist[curr.x][curr.y]
-                                + grid[rows][cols];
+                                + grid[rows][cols] + (features.contains(rows + ":" + cols + "-") ? 1 : 3);
 
                         pq.add(new Cell(rows, cols,
                                 dist[rows][cols], 0));
@@ -456,6 +457,8 @@ public class Main {
 
                 } else if (type.equals("b")) {
                     bombs.add(new Cell(x, y, param_2, param_1));
+                } else if (type.equals("f_r") || type.equals("f_a")) {
+                    features += x + ":" + y + "-";
                 }
                 if (!istest) {
                     System.err.println(type + " " + p_id + " " + y + " " + x + " " + param_1 + " " + param_2);
@@ -502,6 +505,9 @@ public class Main {
             }
             System.out.println(actions[direction]);
             if (istest) {
+                if (features.contains("4:2-")) {
+                    System.out.println("bar");
+                }
                 break;
             } else {
                 System.err.println(actions[direction]);
