@@ -174,6 +174,18 @@ public class Main {
         }
     }
 
+    static void printMapdouble(double[][] dist, int endX, int endY) {
+        if (istest) {
+            System.out.println((endX) + " " + (endY));
+            for (int i = 0; i < ROW; i++) {
+                for (int j = 0; j < COL; j++) {
+                    System.out.print((dist[i][j] == Integer.MAX_VALUE ? "INF" : Math.round(dist[i][j] * 100.0) / 100.0) + " \t");
+                }
+                System.out.println();
+            }
+        }
+    }
+
     static void printMapchar(char[][] dist) {
         if (istest) {
             for (int i = 0; i < ROW; i++) {
@@ -198,17 +210,30 @@ public class Main {
     }
 
     static Cell getManyBrick(char[][] grid, Cell pl) {
-        int[][] volume = new int[ROW][COL];
+        double[][] volume = new double[ROW][COL];
+        int row = pl.x;
+        int col = pl.y;
+        boolean finded = true;
+
+        double v = Math.sqrt(Math.sqrt((ROW * COL)));
 
         for (int i = 0; i < ROW; i++) {
             for (int j = 0; j < COL; j++) {
                 if (chars[i][j] == place) {
-                    volume[i][j] = 1000;
                     for (int k = 0; k < dx.length - 1; k++) {
                         for (int l = 1; l <= pl.distance; l++) {
                             if (isInside(i + dx[k] * l, j + dy[k] * l)) {
                                 if (chars[i + dx[k] * l][j + dy[k] * l] == brick) {
-                                    volume[i][j] -= 40;
+                                    if (volume[i][j] < 0) {
+                                        volume[i][j] *= 1.5;
+                                    } else {
+                                        volume[i][j] -= v;
+                                    }
+//                                    if ((Math.abs(pl.x - i + dx[k] * l) + Math.abs(pl.y - i + dy[k] * l))
+//                                            < (Math.abs(pl.x - row) + Math.abs(pl.y - col))) {
+//                                        row = i + dx[k] * l;
+//                                        col = i + dy[k] * l;
+//                                    }
                                     break;
                                 } else if (chars[i + dx[k] * l][j + dy[k] * l] == wall) {
                                     break;
@@ -219,12 +244,10 @@ public class Main {
                 }
             }
         }
-//        if (volume[pl.x][pl.y] == 0) {
-//            volume[pl.x][pl.y] = Integer.MAX_VALUE;
-//        }
-        int row = pl.x;
-        int col = pl.y;
-        boolean finded = false;
+        if (volume[pl.x][pl.y] == 0) {
+            volume[pl.x][pl.y] = Integer.MAX_VALUE;
+            finded = false;
+        }
         boolean[][] visited = new boolean[ROW][COL];
 
         LinkedList<Cell> queue = new LinkedList<Cell>();
@@ -236,31 +259,31 @@ public class Main {
             iter++;
             Cell c = queue.poll();
             if (istest) {
+                System.out.println("target:" + row + " " + col);
                 for (int i = 0; i < queue.size(); i++) {
                     Cell c2 = queue.get(i);
                     System.out.print(c2.x + ":" + c2.y + "; ");
                 }
                 System.out.println();
-                printMapint(volume, c.x, c.y);
-            }
-            if (volume[c.x][c.y] != 0) {
-                volume[c.x][c.y] += iter / 4;
+                printMapdouble(volume, c.x, c.y);
             }
             if (volume[c.x][c.y] < volume[row][col]) {
                 row = c.x;
                 col = c.y;
+                finded = true;
             }
-            for (int i = 0; i < dx.length; i++) {
+            for (int i = 0; i < dx.length - 1; i++) {
                 if (isInside(c.x + dx[i], c.y + dy[i])
                         && chars[c.x + dx[i]][c.y + dy[i]] == place
                         && !visited[c.x + dx[i]][c.y + dy[i]]) {
                     queue.add(new Cell(c.x + dx[i], c.y + dy[i], 0, 0));
                     visited[c.x + dx[i]][c.y + dy[i]] = true;
+                    volume[c.x + dx[i]][c.y + dy[i]] += Math.sqrt(Math.sqrt(iter));
                 }
             }
         }
 
-        return new Cell(row, col, 0, 0);
+        return new Cell(row, col, 0, finded ? 1 : 0);
     }
 
     static Cell escape(char[][] grid, int startX,
@@ -463,10 +486,8 @@ public class Main {
             }
 
             int direction = shortestPath(grid, pl.x, pl.y, r.x, r.y);
-            if (pl.x == r.x && pl.y == r.y) {
-                if (pl.bomb > 0) {
-                    direction = 5;
-                }
+            if (pl.x == r.x && pl.y == r.y && pl.bomb > 0 && r.bomb > 0) {
+                direction = 5;
             } else {
                 if ((chars[pl.x - dx[direction]][pl.y - dy[direction]] == brick
                         || chars[pl.x - dx[direction]][pl.y - dy[direction]] == monster)
