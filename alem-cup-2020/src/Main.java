@@ -108,7 +108,7 @@ public class Main {
                 int rows = curr.x + dx[i];
                 int cols = curr.y + dy[i];
 
-                if (isInside(rows, cols) && chars[rows][cols] != wall) {
+                if (isInside(rows, cols) && chars[rows][cols] != wall && chars[rows][cols] != brick) {
                     if (dist[rows][cols]
                             > dist[curr.x][curr.y]
                             + grid[rows][cols]) {
@@ -275,7 +275,7 @@ public class Main {
             }
             for (int i = 0; i < dx.length - 1; i++) {
                 if (isInside(c.x + dx[i], c.y + dy[i])
-                        && chars[c.x + dx[i]][c.y + dy[i]] == place
+                        && (chars[c.x + dx[i]][c.y + dy[i]] == place || chars[c.x + dx[i]][c.y + dy[i]] == bomb)
                         && !visited[c.x + dx[i]][c.y + dy[i]]) {
                     queue.add(new Cell(c.x + dx[i], c.y + dy[i], 0, 0));
                     visited[c.x + dx[i]][c.y + dy[i]] = true;
@@ -346,20 +346,21 @@ public class Main {
         return new Cell(row, col, 0, 0);
     }
 
-    static void setBomb(int x, int y, int perimeter, char elem) {
+    static void setBomb(int x, int y, int perimeter, char elem, Cell pl) {
 //        chars[x][y] = elem;
         for (int j = 0; j < dx.length - 1; j++) {
             for (int i = 1; i <= perimeter; i++) {
                 if (isInside(x + i * dx[j], y + i * dy[j])) {
-                    if (chars[x + i * dx[j]][y + i * dy[j]] != wall) {
+                    if (chars[x + i * dx[j]][y + i * dy[j]] == wall
+                            || (elem == wall && pl.x == x + i * dx[j] && pl.y == y + i * dy[j])) {
+                        break;
+                    } else {
                         if (chars[x + i * dx[j]][y + i * dy[j]] == brick) {
                             chars[x + i * dx[j]][y + i * dy[j]] = wall;
                             break;
                         } else {
                             chars[x + i * dx[j]][y + i * dy[j]] = elem;
                         }
-                    } else {
-                        break;
                     }
                 }
             }
@@ -437,7 +438,7 @@ public class Main {
                     r = new Cell(x, y, 0, 0);
                 } else if (type.equals("m")) {
                     chars[x][y] = monster;
-                    setBomb(x, y, 2, monster);
+                    setBomb(x, y, 2, monster, pl);
                     if (isInsideGrid(x + 1, y + 1)
                             && chars[x + 1][y + 1] != brick) {
                         chars[x + 1][y + 1] = monster;
@@ -466,9 +467,9 @@ public class Main {
             }
             for (Cell b : bombs) {
                 chars[b.x][b.y] = wall;
-                setBomb(b.x, b.y, b.distance + 1, bomb);
+                setBomb(b.x, b.y, b.distance + 1, bomb, pl);
                 if (!(b.x == pl.x && b.y == pl.y)) {
-                    setBomb(b.x, b.y, Math.min(b.distance, 4) + 1 - b.bomb, wall);
+                    setBomb(b.x, b.y, Math.min(b.distance, 4) + 1 - b.bomb, wall, pl);
                 }
             }
 //            for (Cell player : players) {
@@ -477,7 +478,7 @@ public class Main {
 
             printMapchar(chars);
             if (!isSafePos(pl.x, pl.y)) {
-                r = escape(chars, pl.x, pl.y, place);
+                r = getManyBrick(chars, pl);
                 if (istest) {
                     System.out.println("portal: " + r.x + " " + r.y);
                 }
