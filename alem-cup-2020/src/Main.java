@@ -226,7 +226,7 @@ public class Main {
                             if (isInside(i + dx[k] * l, j + dy[k] * l)) {
                                 if (chars[i + dx[k] * l][j + dy[k] * l] == brick) {
                                     if (volume[i][j] < 0) {
-                                        volume[i][j] *= 1.5;
+                                        volume[i][j] *= 1.3;
                                     } else {
                                         volume[i][j] -= v;
                                     }
