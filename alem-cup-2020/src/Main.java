@@ -120,7 +120,7 @@ public class Main {
                             pq.remove(adj);
                         }
                         dist[rows][cols] = dist[curr.x][curr.y]
-                                + grid[rows][cols] + (features.contains(rows + ":" + cols + "-") ? 1 : 3);
+                                + grid[rows][cols] + (features.contains(rows + ":" + cols + "-") ? 1 : 10);
 
                         pq.add(new Cell(rows, cols,
                                 dist[rows][cols], 0));
@@ -226,7 +226,7 @@ public class Main {
                             if (isInside(i + dx[k] * l, j + dy[k] * l)) {
                                 if (chars[i + dx[k] * l][j + dy[k] * l] == brick) {
                                     if (volume[i][j] < 0) {
-                                        volume[i][j] *= 1.3;
+                                        volume[i][j] *= 1.25;
                                     } else {
                                         volume[i][j] -= v;
                                     }
@@ -241,6 +241,13 @@ public class Main {
                                 }
                             }
                         }
+                    }
+                }
+                if (features.contains((i) + ":" + (j) + "-") && chars[i][j] != bomb) {
+                    if (volume[i][j] < 0) {
+                        volume[i][j] *= 1.3;
+                    } else {
+                        volume[i][j] -= v;
                     }
                 }
             }
@@ -379,6 +386,7 @@ public class Main {
             String str, type;
 
             boolean hasBrick = false;
+            features = "";
 
             COL = scan.nextInt();
             ROW = scan.nextInt();
@@ -458,7 +466,7 @@ public class Main {
 
                 } else if (type.equals("b")) {
                     bombs.add(new Cell(x, y, param_2, param_1));
-                } else if (type.equals("f_r") || type.equals("f_a")) {
+                } else if (type.equals("f_r")) {
                     features += x + ":" + y + "-";
                 }
                 if (!istest) {
@@ -478,7 +486,11 @@ public class Main {
 
             printMapchar(chars);
             if (!isSafePos(pl.x, pl.y)) {
-                r = getManyBrick(chars, pl);
+                if (pl.distance < 5) {
+                    r = getManyBrick(chars, pl);
+                } else {
+                    r = escape(chars, pl.x, pl.y, place);
+                }
                 if (istest) {
                     System.out.println("portal: " + r.x + " " + r.y);
                 }
@@ -506,9 +518,6 @@ public class Main {
             }
             System.out.println(actions[direction]);
             if (istest) {
-                if (features.contains("4:2-")) {
-                    System.out.println("bar");
-                }
                 break;
             } else {
                 System.err.println(actions[direction]);
