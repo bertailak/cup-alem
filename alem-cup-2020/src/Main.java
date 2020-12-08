@@ -227,7 +227,7 @@ public class Main {
                             if (isInside(i + dx[k] * l, j + dy[k] * l)) {
                                 if (chars[i + dx[k] * l][j + dy[k] * l] == brick) {
                                     if (volume[i][j] < 0) {
-                                        volume[i][j] *= 1.25;
+                                        volume[i][j] *= 1.2;
                                     } else {
                                         volume[i][j] -= v;
                                     }
@@ -246,16 +246,16 @@ public class Main {
                 }
                 if (featuresR.contains((i) + ":" + (j) + "-") && chars[i][j] != bomb) {
                     if (volume[i][j] < 0) {
-                        volume[i][j] *= 1 + 0.3 / (pl.distance - 1);
+                        volume[i][j] *= 1 + 0.25 / (pl.distance - 1);
                     } else {
                         volume[i][j] -= v / (pl.distance - 1);
                     }
                 }
                 if (featuresA.contains((i) + ":" + (j) + "-") && chars[i][j] != bomb) {
                     if (volume[i][j] < 0) {
-                        volume[i][j] *= 1 + 0.2 / (pl.bomb + 1);
+                        volume[i][j] *= 1 + 0.15 / (pl.bomb + 1);
                     } else {
-                        volume[i][j] -= v / 2 / (pl.bomb + 1);
+                        volume[i][j] -= v / 15 / (pl.bomb + 1);
                     }
                 }
             }
