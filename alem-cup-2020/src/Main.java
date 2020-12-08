@@ -14,7 +14,8 @@ public class Main {
     static char brick = ';';
     static char bomb = 'b';
     static char monster = 'm';
-    static String features = "";
+    static String featuresR = "";
+    static String featuresA = "";
 
     static class Cell {
 
@@ -120,7 +121,7 @@ public class Main {
                             pq.remove(adj);
                         }
                         dist[rows][cols] = dist[curr.x][curr.y]
-                                + grid[rows][cols] + (features.contains(rows + ":" + cols + "-") ? 1 : 10);
+                                + grid[rows][cols];
 
                         pq.add(new Cell(rows, cols,
                                 dist[rows][cols], 0));
@@ -243,11 +244,18 @@ public class Main {
                         }
                     }
                 }
-                if (features.contains((i) + ":" + (j) + "-") && chars[i][j] != bomb) {
+                if (featuresR.contains((i) + ":" + (j) + "-") && chars[i][j] != bomb) {
                     if (volume[i][j] < 0) {
-                        volume[i][j] *= 1.3;
+                        volume[i][j] *= 1 + 0.3 / (pl.distance - 1);
                     } else {
-                        volume[i][j] -= v;
+                        volume[i][j] -= v / (pl.distance - 1);
+                    }
+                }
+                if (featuresA.contains((i) + ":" + (j) + "-") && chars[i][j] != bomb) {
+                    if (volume[i][j] < 0) {
+                        volume[i][j] *= 1 + 0.2 / (pl.bomb + 1);
+                    } else {
+                        volume[i][j] -= v / 2 / (pl.bomb + 1);
                     }
                 }
             }
@@ -386,7 +394,8 @@ public class Main {
             String str, type;
 
             boolean hasBrick = false;
-            features = "";
+            featuresR = "";
+            featuresA = "";
 
             COL = scan.nextInt();
             ROW = scan.nextInt();
@@ -467,7 +476,9 @@ public class Main {
                 } else if (type.equals("b")) {
                     bombs.add(new Cell(x, y, param_2, param_1));
                 } else if (type.equals("f_r")) {
-                    features += x + ":" + y + "-";
+                    featuresR += x + ":" + y + "-";
+                } else if (type.equals("f_a")) {
+                    featuresA += x + ":" + y + "-";
                 }
                 if (!istest) {
                     System.err.println(type + " " + p_id + " " + y + " " + x + " " + param_1 + " " + param_2);
