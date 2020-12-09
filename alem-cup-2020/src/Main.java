@@ -244,14 +244,14 @@ public class Main {
                         }
                     }
                 }
-                if (featuresR.contains((i) + ":" + (j) + "-") && chars[i][j] != bomb) {
+                if (featuresR.contains("[" + (i) + ":" + (j) + "-") && chars[i][j] != bomb) {
                     if (volume[i][j] < 0) {
                         volume[i][j] *= 1 + 0.25 / (pl.distance - 1);
                     } else {
                         volume[i][j] -= v / (pl.distance - 1);
                     }
                 }
-                if (featuresA.contains((i) + ":" + (j) + "-") && chars[i][j] != bomb) {
+                if (featuresA.contains("[" + (i) + ":" + (j) + "-") && chars[i][j] != bomb) {
                     if (volume[i][j] < 0) {
                         volume[i][j] *= 1 + 0.25 / (pl.bomb + 1);
                     } else {
@@ -476,9 +476,9 @@ public class Main {
                 } else if (type.equals("b")) {
                     bombs.add(new Cell(x, y, param_2, param_1));
                 } else if (type.equals("f_r")) {
-                    featuresR += x + ":" + y + "-";
+                    featuresR += "[" + x + ":" + y + "-";
                 } else if (type.equals("f_a")) {
-                    featuresA += x + ":" + y + "-";
+                    featuresA += "[" + x + ":" + y + "-";
                 }
                 if (!istest) {
                     System.err.println(type + " " + p_id + " " + y + " " + x + " " + param_1 + " " + param_2);
