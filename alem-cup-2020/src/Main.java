@@ -23,6 +23,8 @@ public class Main {
         int y;
         int distance;
         int bomb;
+        int teleport;
+        int jump;
 
         Cell(int x, int y, int distance, int bomb) {
             this.x = x;
@@ -227,7 +229,7 @@ public class Main {
                             if (isInside(i + dx[k] * l, j + dy[k] * l)) {
                                 if (chars[i + dx[k] * l][j + dy[k] * l] == brick) {
                                     if (volume[i][j] < 0) {
-                                        volume[i][j] *= 1.2;
+                                        volume[i][j] *= 1.3;
                                     } else {
                                         volume[i][j] -= v;
                                     }
@@ -475,7 +477,7 @@ public class Main {
 
                 } else if (type.equals("b")) {
                     bombs.add(new Cell(x, y, param_2, param_1));
-                } else if (type.equals("f_r")) {
+                } else if (type.equals("f_r") || type.equals("f_t") || type.equals("f_j"))  {
                     featuresR += "[" + x + ":" + y + "-";
                 } else if (type.equals("f_a")) {
                     featuresA += "[" + x + ":" + y + "-";
@@ -484,6 +486,21 @@ public class Main {
                     System.err.println(type + " " + p_id + " " + y + " " + x + " " + param_1 + " " + param_2);
                 }
             }
+
+            n = scan.nextInt();
+
+            if (!istest) {
+                System.err.println(n);
+            }
+            for (int i = 0; i < n; i++) {
+                int c = scan.nextInt();
+                int v = scan.nextInt();
+                if (player_id == c) {
+                    pl.teleport = v;
+                }
+                System.out.println(c+" "+v);
+            }
+
             for (Cell b : bombs) {
                 chars[b.x][b.y] = wall;
                 setBomb(b.x, b.y, b.distance + 1, bomb, pl);
