@@ -13,7 +13,9 @@ public class Main {
     static char wall = '!';
     static char brick = ';';
     static char bomb = 'b';
+    static char Bomb = 'B';
     static char monster = 'm';
+    static String featuresT = "";
     static String featuresR = "";
     static String featuresA = "";
 
@@ -50,7 +52,7 @@ public class Main {
 
     static boolean isSafePos(int i, int j) {
         boolean res = true;
-        if (chars[i][j] == bomb || chars[i][j] == wall) {
+        if (chars[i][j] == bomb || chars[i][j] == wall || chars[i][j] == Bomb) {
             res = false;
         }
 
@@ -81,6 +83,7 @@ public class Main {
     static boolean isInsideGrid(int i, int j) {
         return (isInside(i, j)
                 && chars[i][j] != bomb
+                && chars[i][j] != Bomb
                 && chars[i][j] != wall);
     }
 
@@ -111,7 +114,9 @@ public class Main {
                 int rows = curr.x + dx[i];
                 int cols = curr.y + dy[i];
 
-                if (isInside(rows, cols) && chars[rows][cols] != wall && chars[rows][cols] != brick) {
+                if (isInside(rows, cols) && chars[rows][cols] != wall
+                        && chars[rows][cols] != Bomb
+                        && chars[rows][cols] != brick) {
                     if (dist[rows][cols]
                             > dist[curr.x][curr.y]
                             + grid[rows][cols]) {
@@ -134,16 +139,17 @@ public class Main {
         return dist;
     }
 
-    static int shortestPath(int[][] grid, int startX,
+    static Cell shortestPath(int[][] grid, int startX,
             int startY, int endX, int endY) {
         int[][] dist = getMinCostPath(grid, startX, startY, endX, endY);
+        Cell res = new Cell(0, 0, dist[endX][endY], 0);
         int direction = 4;
         while (true) {
             int minIndex = 4;
             for (int i = 0; i < 4; i++) {
                 int rows = endX + dx[i];
                 int cols = endY + dy[i];
-                if (isInside(rows, cols) && chars[rows][cols] != wall
+                if (isInside(rows, cols) && chars[rows][cols] != wall && chars[rows][cols] != Bomb
                         && dist[rows][cols] < dist[endX + dx[minIndex]][endY + dy[minIndex]]
                         || (startX == endX + dx[i] && startY == endY + dy[i])) {
                     minIndex = i;
@@ -162,8 +168,9 @@ public class Main {
         }
 
         printMapint(dist, endX, endY);
+        res.x = direction;
 
-        return direction;
+        return res;
     }
 
     static void printMapint(int[][] dist, int endX, int endY) {
@@ -244,6 +251,13 @@ public class Main {
                                 }
                             }
                         }
+                    }
+                }
+                if (featuresT.contains("[" + (i) + ":" + (j) + "-")) {
+                    if (volume[i][j] < 0) {
+                        volume[i][j] *= 1 + 0.25 / (pl.distance - 1);
+                    } else {
+                        volume[i][j] -= v / (pl.distance - 1);
                     }
                 }
                 if (featuresR.contains("[" + (i) + ":" + (j) + "-") && chars[i][j] != bomb) {
@@ -345,10 +359,13 @@ public class Main {
                 break;
             }
             for (int i = 0; i < dx.length; i++) {
-                if (isInside(c.x + dx[i], c.y + dy[i]) && chars[c.x + dx[i]][c.y + dy[i]] != wall
+                if (isInside(c.x + dx[i], c.y + dy[i])
+                        && chars[c.x + dx[i]][c.y + dy[i]] != wall
+                        && chars[c.x + dx[i]][c.y + dy[i]] != Bomb
                         && !visited[c.x + dx[i]][c.y + dy[i]]) {
                     if ((aim == brick || aim == monster || (aim == place
                             && chars[c.x + dx[i]][c.y + dy[i]] != brick
+                            && chars[c.x + dx[i]][c.y + dy[i]] != Bomb
                             && chars[c.x + dx[i]][c.y + dy[i]] != wall))) {
                         queue.add(new Cell(c.x + dx[i], c.y + dy[i], 0, 0));
                         visited[c.x + dx[i]][c.y + dy[i]] = true;
@@ -409,6 +426,7 @@ public class Main {
             }
 
             Cell pl = new Cell(0, 0, 0, 0);
+            Cell pl2 = new Cell(0, 0, 0, 0);
             Cell r = new Cell(0, 0, 0, 0);
             int[][] grid = new int[ROW][COL];
             chars = new char[ROW][COL];
@@ -451,7 +469,7 @@ public class Main {
                     if (player_id == p_id) {
                         pl = new Cell(x, y, param_2, param_1);
                     } else {
-                        players.add(new Cell(x, y, 0, 0));
+                        pl2 = new Cell(x, y, param_2, param_1);
                     }
                 } else if (type.equals("r")) {
                     r = new Cell(x, y, 0, 0);
@@ -477,7 +495,9 @@ public class Main {
 
                 } else if (type.equals("b")) {
                     bombs.add(new Cell(x, y, param_2, param_1));
-                } else if (type.equals("f_r") || type.equals("f_t") || type.equals("f_j"))  {
+                } else if (type.equals("f_t") || type.equals("f_j")) {
+                    featuresT += "[" + x + ":" + y + "-";
+                } else if (type.equals("f_r")) {
                     featuresR += "[" + x + ":" + y + "-";
                 } else if (type.equals("f_a")) {
                     featuresA += "[" + x + ":" + y + "-";
@@ -493,24 +513,35 @@ public class Main {
                 System.err.println(n);
             }
             for (int i = 0; i < n; i++) {
-                int c = scan.nextInt();
+                int pId = scan.nextInt();
                 int v = scan.nextInt();
-                if (player_id == c) {
-                    pl.teleport = v;
+                if (!istest) {
+                    System.err.println(pId + " " + v);
                 }
-                System.out.println(c+" "+v);
+                if (player_id == pId) {
+                    if (v == 1) {
+                        pl.teleport = 1;
+                    }
+                    if (v == 0) {
+                        pl.jump = 1;
+                    }
+                } else {
+                    if (v == 1) {
+                        pl2.teleport = 1;
+                    }
+                    if (v == 0) {
+                        pl2.jump = 1;
+                    }
+                }
             }
 
             for (Cell b : bombs) {
-                chars[b.x][b.y] = wall;
+                chars[b.x][b.y] = Bomb;
                 setBomb(b.x, b.y, b.distance + 1, bomb, pl);
                 if (!(b.x == pl.x && b.y == pl.y)) {
                     setBomb(b.x, b.y, Math.min(b.distance, 4) + 1 - b.bomb, wall, pl);
                 }
             }
-//            for (Cell player : players) {
-//                chars[player.x][player.y] = brick;
-//            }
 
             printMapchar(chars);
             if (!isSafePos(pl.x, pl.y)) {
@@ -529,7 +560,8 @@ public class Main {
                 }
             }
 
-            int direction = shortestPath(grid, pl.x, pl.y, r.x, r.y);
+            Cell res = shortestPath(grid, pl.x, pl.y, r.x, r.y);
+            int direction = res.x;
             if (pl.x == r.x && pl.y == r.y && pl.bomb > 0 && r.bomb > 0) {
                 direction = 5;
             } else {
@@ -538,10 +570,6 @@ public class Main {
                         && chars[pl.x][pl.y] != bomb
                         && pl.bomb > 0) {
                     direction = 5;
-                } else {
-//                if (!isSafePos(pl.x - dx[direction], pl.y - dy[direction])) {
-//                    direction = 4;
-//                }
                 }
             }
             System.out.println(actions[direction]);
