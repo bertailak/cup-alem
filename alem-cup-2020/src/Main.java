@@ -344,6 +344,16 @@ public class Main {
         printMapint(tunnel, 0, 0);
     }
 
+    static boolean inTunnel(Cell pl) {
+        boolean res = false;
+
+        if (tunnel[pl.x][pl.y] == 1) {
+            res = true;
+        }
+
+        return res;
+    }
+
     static void SetTunnel(int i, int j, int vol) {
         int dir = 0;
         for (int k = 0; k < dx.length - 1; k++) {
@@ -596,6 +606,27 @@ public class Main {
 
             printMapchar(chars);
             GetTunnel();
+            Cell pl2path = shortestPath(grid, pl.x, pl.y, pl2.x, pl2.y);
+            if (istest) {
+                System.out.println(pl2path.x + " " + pl2path.distance);
+            }
+            if (pl2.teleport > 0 || pl2path.distance < 10) {
+                for (int i = 0; i < ROW; i++) {
+                    for (int j = 0; j < COL; j++) {
+                        if (tunnel[i][j] == 100) {
+                            for (int k = 0; k < dx.length - 1; k++) {
+                                if (isInside(i + dx[k], j + dy[k])
+                                        && tunnel[i + dx[k]][j + dy[k]] != 0
+                                        && tunnel[i + dx[k]][j + dy[k]] != Integer.MAX_VALUE) {
+//                                    grid[i + dx[k]][j + dy[k]] = Integer.MAX_VALUE;
+                                    chars[i + dx[k]][j + dy[k]] = wall;
+                                }
+                            }
+                        }
+                    }
+                }
+                printMapchar(chars);
+            }
             if (!isSafePos(pl.x, pl.y)) {
                 if (pl.distance < 5) {
                     r = getManyBrick(chars, pl);
