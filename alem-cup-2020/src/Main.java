@@ -375,6 +375,18 @@ public class Main {
         }
     }
 
+    static void SetTunnelClear(int i, int j) {
+        if (tunnel[i][j] == 100) {
+            tunnel[i][j] = 99;
+        } else {
+            for (int k = 0; k < dx.length - 1; k++) {
+                if (isInside(i + dx[k], j + dy[k]) && tunnel[i + dx[k]][j + dy[k]] > tunnel[i][j]) {
+                    SetTunnelClear(i + dx[k], j + dy[k]);
+                }
+            }
+        }
+    }
+
     static Cell escape(char[][] grid, int startX,
             int startY, char aim) {
 
@@ -595,6 +607,11 @@ public class Main {
                 }
             }
 
+            GetTunnel();
+            Cell pl2path = shortestPath(grid, pl.x, pl.y, pl2.x, pl2.y);
+            if (istest) {
+                System.out.println("PL2: " + pl2path.x + " " + pl2path.distance);
+            }
             for (Cell b : bombs) {
                 chars[b.x][b.y] = Bomb;
                 tunnel[b.x][b.y] = Integer.MAX_VALUE;
@@ -605,12 +622,8 @@ public class Main {
             }
 
             printMapchar(chars);
-            GetTunnel();
-            Cell pl2path = shortestPath(grid, pl.x, pl.y, pl2.x, pl2.y);
-            if (istest) {
-                System.out.println(pl2path.x + " " + pl2path.distance);
-            }
             if (pl2.teleport > 0 || pl2path.distance < 10) {
+                SetTunnelClear(pl.x, pl.y);
                 for (int i = 0; i < ROW; i++) {
                     for (int j = 0; j < COL; j++) {
                         if (tunnel[i][j] == 100) {
