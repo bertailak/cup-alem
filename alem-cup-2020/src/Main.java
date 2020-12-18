@@ -9,6 +9,7 @@ public class Main {
     static int ROW;
     static int COL;
     static char[][] chars;
+    static int[][] tunnel;
     static char place = '.';
     static char wall = '!';
     static char brick = ';';
@@ -255,9 +256,9 @@ public class Main {
                 }
                 if (featuresT.contains("[" + (i) + ":" + (j) + "-")) {
                     if (volume[i][j] < 0) {
-                        volume[i][j] *= 1 + 0.25 / (pl.distance - 1);
+                        volume[i][j] *= 1 + 0.35 / (pl.distance - 1);
                     } else {
-                        volume[i][j] -= v / (pl.distance - 1);
+                        volume[i][j] -= (v * 1.1) / (pl.distance - 1);
                     }
                 }
                 if (featuresR.contains("[" + (i) + ":" + (j) + "-") && chars[i][j] != bomb) {
@@ -290,7 +291,7 @@ public class Main {
         while (queue.size() > 0) {
             iter++;
             Cell c = queue.poll();
-            if (istest) {
+            if (istest && false) {
                 System.out.println("target:" + row + " " + col);
                 for (int i = 0; i < queue.size(); i++) {
                     Cell c2 = queue.get(i);
@@ -314,8 +315,54 @@ public class Main {
                 }
             }
         }
+        printMapdouble(volume, row, col);
 
         return new Cell(row, col, 0, finded ? 1 : 0);
+    }
+
+    static void GetTunnel() {
+        printMapint(tunnel, 0, 0);
+        for (int i = 0; i < ROW; i++) {
+            for (int j = 0; j < COL; j++) {
+                if (tunnel[i][j] == 0) {
+                    int dir = 0;
+                    int exit = 0;
+                    for (int k = 0; k < dx.length - 1; k++) {
+                        if (isInside(i + dx[k], j + dy[k])) {
+                            dir++;
+                            if (tunnel[i + dx[k]][j + dy[k]] == Integer.MAX_VALUE) {
+                                exit++;
+                            }
+                        }
+                    }
+                    if (dir - exit == 1) {
+                        SetTunnel(i, j, 1);
+                    }
+                }
+            }
+        }
+        printMapint(tunnel, 0, 0);
+    }
+
+    static void SetTunnel(int i, int j, int vol) {
+        int dir = 0;
+        for (int k = 0; k < dx.length - 1; k++) {
+            if (isInside(i + dx[k], j + dy[k])
+                    && (tunnel[i + dx[k]][j + dy[k]] == 0 || tunnel[i + dx[k]][j + dy[k]] == 100)) {
+                dir++;
+            }
+        }
+        if (dir == 1 && tunnel[i][j] != 100 && (tunnel[i][j] == 0 || tunnel[i][j] > vol)) {
+            tunnel[i][j] = vol;
+            for (int k = 0; k < dx.length - 1; k++) {
+                if (isInside(i + dx[k], j + dy[k])
+                        && (tunnel[i + dx[k]][j + dy[k]] == 0 || tunnel[i + dx[k]][j + dy[k]] == 100)) {
+                    SetTunnel(i + dx[k], j + dy[k], vol + 1);
+                }
+            }
+        } else if (dir > 1) {
+            tunnel[i][j] = 100;
+        }
     }
 
     static Cell escape(char[][] grid, int startX,
@@ -430,6 +477,7 @@ public class Main {
             Cell r = new Cell(0, 0, 0, 0);
             int[][] grid = new int[ROW][COL];
             chars = new char[ROW][COL];
+            tunnel = new int[ROW][COL];
 
             for (int i = 0; i < ROW; i++) {
                 str = scan.nextLine();
@@ -441,10 +489,12 @@ public class Main {
                     if (chars[i][j] == place) {
                         grid[i][j] = 1;
                     } else if (chars[i][j] == brick) {
+                        tunnel[i][j] = Integer.MAX_VALUE;
                         grid[i][j] = 10;
                         hasBrick = true;
                     } else if (chars[i][j] == wall) {
                         grid[i][j] = Integer.MAX_VALUE;
+                        tunnel[i][j] = Integer.MAX_VALUE;
                     }
                 }
             }
@@ -537,6 +587,7 @@ public class Main {
 
             for (Cell b : bombs) {
                 chars[b.x][b.y] = Bomb;
+                tunnel[b.x][b.y] = Integer.MAX_VALUE;
                 setBomb(b.x, b.y, b.distance + 1, bomb, pl);
                 if (!(b.x == pl.x && b.y == pl.y)) {
                     setBomb(b.x, b.y, Math.min(b.distance, 4) + 1 - b.bomb, wall, pl);
@@ -544,6 +595,7 @@ public class Main {
             }
 
             printMapchar(chars);
+            GetTunnel();
             if (!isSafePos(pl.x, pl.y)) {
                 if (pl.distance < 5) {
                     r = getManyBrick(chars, pl);
