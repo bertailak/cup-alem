@@ -471,17 +471,19 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
-        String actions[] = {"down", "left", "up", "right", "stay", "bomb"};
+        String actions[] = {"down", "left", "up", "right", "stay", "bomb", "jump"};
         Scanner scan = new Scanner(System.in);
         if (istest) {
             scan = new Scanner(new File("input.txt"));
         }
+        Cell prev = new Cell(0, 0, 0, 0);
 
         while (true) {
             int player_id, tick, n, p_id, x, y, param_1, param_2;
             String str, type;
 
             boolean hasBrick = false;
+            featuresT = "";
             featuresR = "";
             featuresA = "";
 
@@ -607,11 +609,11 @@ public class Main {
                 }
             }
 
-            GetTunnel();
-            Cell pl2path = shortestPath(grid, pl.x, pl.y, pl2.x, pl2.y);
-            if (istest) {
-                System.out.println("PL2: " + pl2path.x + " " + pl2path.distance);
-            }
+//            GetTunnel();
+//            Cell pl2path = shortestPath(grid, pl.x, pl.y, pl2.x, pl2.y);
+//            if (istest) {
+//                System.out.println("PL2: " + pl2path.x + " " + pl2path.distance);
+//            }
             for (Cell b : bombs) {
                 chars[b.x][b.y] = Bomb;
                 tunnel[b.x][b.y] = Integer.MAX_VALUE;
@@ -622,24 +624,24 @@ public class Main {
             }
 
             printMapchar(chars);
-            if (pl2.teleport > 0 || pl2path.distance < 10) {
-                SetTunnelClear(pl.x, pl.y);
-                for (int i = 0; i < ROW; i++) {
-                    for (int j = 0; j < COL; j++) {
-                        if (tunnel[i][j] == 100) {
-                            for (int k = 0; k < dx.length - 1; k++) {
-                                if (isInside(i + dx[k], j + dy[k])
-                                        && tunnel[i + dx[k]][j + dy[k]] != 0
-                                        && tunnel[i + dx[k]][j + dy[k]] != Integer.MAX_VALUE) {
-//                                    grid[i + dx[k]][j + dy[k]] = Integer.MAX_VALUE;
-                                    chars[i + dx[k]][j + dy[k]] = wall;
-                                }
-                            }
-                        }
-                    }
-                }
-                printMapchar(chars);
-            }
+//            if (pl2.teleport > 0 || pl2path.distance < 10) {
+//                SetTunnelClear(pl.x, pl.y);
+//                for (int i = 0; i < ROW; i++) {
+//                    for (int j = 0; j < COL; j++) {
+//                        if (tunnel[i][j] == 100) {
+//                            for (int k = 0; k < dx.length - 1; k++) {
+//                                if (isInside(i + dx[k], j + dy[k])
+//                                        && tunnel[i + dx[k]][j + dy[k]] != 0
+//                                        && tunnel[i + dx[k]][j + dy[k]] != Integer.MAX_VALUE) {
+////                                    grid[i + dx[k]][j + dy[k]] = Integer.MAX_VALUE;
+//                                    chars[i + dx[k]][j + dy[k]] = wall;
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//                printMapchar(chars);
+//            }
             if (!isSafePos(pl.x, pl.y)) {
                 if (pl.distance < 5) {
                     r = getManyBrick(chars, pl);
@@ -655,6 +657,22 @@ public class Main {
                     System.out.println("brick: " + r.x + " " + r.y);
                 }
             }
+            hasBrick = false;
+            for (int i = 0; i < ROW; i++) {
+                for (int j = 0; j < COL; j++) {
+                    if (chars[i][j] == brick) {
+                        hasBrick = true;
+                    }
+                }
+
+            }
+            if (!hasBrick) {
+                r.x = ROW / 2;
+                r.y = COL / 2;
+                if (istest) {
+                    System.out.println("center: " + r.x + " " + r.y);
+                }
+            }
 
             Cell res = shortestPath(grid, pl.x, pl.y, r.x, r.y);
             int direction = res.x;
@@ -668,11 +686,27 @@ public class Main {
                     direction = 5;
                 }
             }
-            System.out.println(actions[direction]);
+
+            String actionvalue = actions[direction];
+
+            if (prev.x == pl.x && prev.y == pl.y && prev.distance < 4) {
+                if (pl.jump == 1) {
+                    actionvalue = actions[6];
+                } else if (pl.teleport == 1) {
+                    Cell c = escape(chars, pl.x, pl.y, place);
+                    actionvalue = "tp " + c.y + " " + c.x;
+                }
+            }
+            prev.x = pl.x;
+            prev.y = pl.y;
+            prev.distance = direction;
+
             if (istest) {
+                System.out.println(actionvalue);
                 break;
             } else {
-                System.err.println(actions[direction]);
+                System.err.println(actionvalue);
+                System.out.println(actionvalue);
             }
         }
     }
