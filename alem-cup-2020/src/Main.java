@@ -320,6 +320,31 @@ public class Main {
         return new Cell(row, col, 0, finded ? 1 : 0);
     }
 
+    static String GetTunnelPath(Cell pl, Cell pl2) {
+        String path = "[" + pl2.x + ":" + pl2.y + "]";
+
+        while (true) {
+
+            int step = tunnel[pl2.x][pl2.y];
+
+            for (int i = 0; i < dx.length - 1; i++) {
+                if (isInside(pl.x + dx[i], pl.y + dy[i])
+                        && tunnel[pl2.x + dx[i]][pl.y + dy[i]] != Integer.MAX_VALUE
+                        && tunnel[pl2.x][pl.y] < tunnel[pl2.x + dx[i]][pl.y + dy[i]]) {
+                    pl2.x = pl2.x + dx[i];
+                    pl2.y = pl2.y + dy[i];
+                    path = path + "[" + pl2.x + ":" + pl2.y + "]";
+                    break;
+                }
+            }
+
+            if (tunnel[pl2.x][pl2.y] == 100 || (pl.x == pl2.x && pl.y == pl2.y)) {
+                break;
+            }
+        }
+        return path;
+    }
+
     static void GetTunnel() {
         printMapint(tunnel, 0, 0);
         for (int i = 0; i < ROW; i++) {
@@ -609,8 +634,6 @@ public class Main {
                 }
             }
 
-//            GetTunnel();
-//            Cell pl2path = shortestPath(grid, pl.x, pl.y, pl2.x, pl2.y);
 //            if (istest) {
 //                System.out.println("PL2: " + pl2path.x + " " + pl2path.distance);
 //            }
@@ -624,6 +647,27 @@ public class Main {
             }
 
             printMapchar(chars);
+            GetTunnel();
+            Cell pl2path = shortestPath(grid, pl.x, pl.y, pl2.x, pl2.y);
+            if (istest) {
+                System.out.println("pl2path.distance: " + pl2path.distance);
+            }
+
+            int direction = 4;
+            String actionvalue = actions[direction];
+
+            if (pl2path.distance < Integer.MAX_VALUE && tunnel[pl2.x][pl2.y] < 100) {
+                String path = GetTunnelPath(pl, pl2);
+                if (istest) {
+                    System.out.println(path);
+                }
+                if (path.contains("[" + pl.x + ":" + pl.y + "]")) {
+                    System.out.println("contains");
+                    if (pl.bomb > 0) {
+                        direction = 5;
+                    }
+                }
+            } else {
 //            if (pl2.teleport > 0 || pl2path.distance < 10) {
 //                SetTunnelClear(pl.x, pl.y);
 //                for (int i = 0; i < ROW; i++) {
@@ -642,64 +686,68 @@ public class Main {
 //                }
 //                printMapchar(chars);
 //            }
-            if (!isSafePos(pl.x, pl.y)) {
-                if (pl.distance < 5) {
-                    r = getManyBrick(chars, pl);
+
+                if (pl.teleport > 0) {
+                    //aldina turup alu kerek
                 } else {
-                    r = escape(chars, pl.x, pl.y, place);
-                }
-                if (istest) {
-                    System.out.println("portal: " + r.x + " " + r.y);
-                }
-            } else if (r.x == 0 && r.y == 0 && hasBrick) {
-                r = getManyBrick(chars, pl);
-                if (istest) {
-                    System.out.println("brick: " + r.x + " " + r.y);
-                }
-            }
-            hasBrick = false;
-            for (int i = 0; i < ROW; i++) {
-                for (int j = 0; j < COL; j++) {
-                    if (chars[i][j] == brick) {
-                        hasBrick = true;
+                    if (!isSafePos(pl.x, pl.y)) {
+                        if (pl.distance < 5) {
+                            r = getManyBrick(chars, pl);
+                        } else {
+                            r = escape(chars, pl.x, pl.y, place);
+                        }
+                        if (istest) {
+                            System.out.println("portal: " + r.x + " " + r.y);
+                        }
+                    } else if (r.x == 0 && r.y == 0 && hasBrick) {
+                        r = getManyBrick(chars, pl);
+                        if (istest) {
+                            System.out.println("brick: " + r.x + " " + r.y);
+                        }
+                    }
+                    hasBrick = false;
+                    for (int i = 0; i < ROW; i++) {
+                        for (int j = 0; j < COL; j++) {
+                            if (chars[i][j] == brick) {
+                                hasBrick = true;
+                            }
+                        }
+
+                    }
+                    if (!hasBrick) {
+
+                        if (!isSafePos(pl.x, pl.y)) {
+                            r = escape(chars, pl.x, pl.y, place);
+                        } else {
+                            r.x = ROW / 2;
+                            r.y = COL / 2;
+                        }
+                        if (istest) {
+                            System.out.println("center: " + r.x + " " + r.y);
+                        }
+                    }
+
+                    Cell res = shortestPath(grid, pl.x, pl.y, r.x, r.y);
+                    direction = res.x;
+                    if (pl.x == r.x && pl.y == r.y && pl.bomb > 0 && r.bomb > 0) {
+                        direction = 5;
+                    } else {
+                        if ((chars[pl.x - dx[direction]][pl.y - dy[direction]] == brick
+                                || chars[pl.x - dx[direction]][pl.y - dy[direction]] == monster)
+                                && chars[pl.x][pl.y] != bomb
+                                && pl.bomb > 0) {
+                            direction = 5;
+                        }
                     }
                 }
 
-            }
-            if (!hasBrick) {
-
-                if (!isSafePos(pl.x, pl.y)) {
-                    r = escape(chars, pl.x, pl.y, place);
-                } else {
-                    r.x = ROW / 2;
-                    r.y = COL / 2;
-                }
-                if (istest) {
-                    System.out.println("center: " + r.x + " " + r.y);
-                }
-            }
-
-            Cell res = shortestPath(grid, pl.x, pl.y, r.x, r.y);
-            int direction = res.x;
-            if (pl.x == r.x && pl.y == r.y && pl.bomb > 0 && r.bomb > 0) {
-                direction = 5;
-            } else {
-                if ((chars[pl.x - dx[direction]][pl.y - dy[direction]] == brick
-                        || chars[pl.x - dx[direction]][pl.y - dy[direction]] == monster)
-                        && chars[pl.x][pl.y] != bomb
-                        && pl.bomb > 0) {
-                    direction = 5;
-                }
-            }
-
-            String actionvalue = actions[direction];
-
-            if (prev.x == pl.x && prev.y == pl.y && prev.distance < 4) {
-                if (pl.jump == 1) {
-                    actionvalue = actions[6];
-                } else if (pl.teleport == 1) {
-                    Cell c = escape(chars, pl.x, pl.y, place);
-                    actionvalue = "tp " + c.y + " " + c.x;
+                if (prev.x == pl.x && prev.y == pl.y && prev.distance < 4) {
+                    if (pl.jump == 1) {
+                        actionvalue = actions[6];
+                    } else if (pl.teleport == 1) {
+                        Cell c = escape(chars, pl.x, pl.y, place);
+                        actionvalue = "tp " + c.y + " " + c.x;
+                    }
                 }
             }
             prev.x = pl.x;
