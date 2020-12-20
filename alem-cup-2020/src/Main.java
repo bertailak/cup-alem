@@ -258,7 +258,7 @@ public class Main {
                     if (volume[i][j] < 0) {
                         volume[i][j] *= 1.5 * v / (pl.distance - 1);
                     } else {
-                        volume[i][j] -= 2.4 * v / (pl.distance - 1);
+                        volume[i][j] -= 2 * v / (pl.distance - 1);
                     }
                 }
                 if (featuresR.contains("[" + (i) + ":" + (j) + "-") && chars[i][j] != bomb) {
@@ -321,13 +321,12 @@ public class Main {
     }
 
     static String GetTunnelPath(Cell pl, int x, int y) {
-        String path = "";
+        String path = "<" + x + ":" + y + "-" + tunnel[x][y];
 
         int j = 100;
         while (j > 0) {
             j--;
             int step = tunnel[x][y];
-            path = path + "<" + x + ":" + y + "-" + tunnel[x][y];
 
             for (int i = 0; i < dx.length - 1; i++) {
                 if (isInside(x + dx[i], y + dy[i])
@@ -338,6 +337,7 @@ public class Main {
                     break;
                 }
             }
+            path = path + "<" + x + ":" + y + "-" + tunnel[x][y];
 
             if (tunnel[x][y] == 100
                     || (false && pl.x == x && pl.y == y)) {
