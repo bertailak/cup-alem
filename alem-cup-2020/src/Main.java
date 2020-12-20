@@ -256,9 +256,9 @@ public class Main {
                 }
                 if (featuresT.contains("[" + (i) + ":" + (j) + "-")) {
                     if (volume[i][j] < 0) {
-                        volume[i][j] *= 2 * v / (pl.distance - 1);
+                        volume[i][j] *= 1.5 * v / (pl.distance - 1);
                     } else {
-                        volume[i][j] -= (v * v) / (pl.distance - 1);
+                        volume[i][j] -= 2.4 * v / (pl.distance - 1);
                     }
                 }
                 if (featuresR.contains("[" + (i) + ":" + (j) + "-") && chars[i][j] != bomb) {
@@ -657,10 +657,13 @@ public class Main {
 
             int direction = 4;
             String actionvalue = actions[direction];
-
-            String path = GetTunnelPath(pl, pl2.x, pl2.y);
-            if (istest) {
-                System.out.println("path: " + path);
+            String path = "";
+            if (tunnel[pl2.x][pl2.y] > 0
+                    && tunnel[pl2.x][pl2.y] < 100) {
+                path = GetTunnelPath(pl, pl2.x, pl2.y);
+                if (istest) {
+                    System.out.println("path: " + path);
+                }
             }
 
             if (pl2path.distance < Integer.MAX_VALUE
@@ -747,7 +750,7 @@ public class Main {
                     if (pl.x == r.x && pl.y == r.y && pl.bomb > 0 && r.bomb > 0) {
                         direction = 5;
                     } else {
-                        if (chars[pl.x - dx[direction]][pl.y - dy[direction]] == bomb && pl.jump > 0) {
+                        if (chars[pl.x - dx[direction]][pl.y - dy[direction]] == wall && pl.jump > 0) {
                             direction = 6;
                         } else if ((chars[pl.x - dx[direction]][pl.y - dy[direction]] == brick
                                 || chars[pl.x - dx[direction]][pl.y - dy[direction]] == monster)
