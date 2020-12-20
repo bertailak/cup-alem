@@ -615,7 +615,7 @@ public class Main {
 //                System.out.println("PL2: " + pl2path.x + " " + pl2path.distance);
 //            }
             for (Cell b : bombs) {
-                chars[b.x][b.y] = Bomb;
+                chars[b.x][b.y] = wall;
                 tunnel[b.x][b.y] = Integer.MAX_VALUE;
                 setBomb(b.x, b.y, b.distance + 1, bomb, pl);
                 if (!(b.x == pl.x && b.y == pl.y)) {
@@ -667,8 +667,13 @@ public class Main {
 
             }
             if (!hasBrick) {
-                r.x = ROW / 2;
-                r.y = COL / 2;
+
+                if (!isSafePos(pl.x, pl.y)) {
+                    r = escape(chars, pl.x, pl.y, place);
+                } else {
+                    r.x = ROW / 2;
+                    r.y = COL / 2;
+                }
                 if (istest) {
                     System.out.println("center: " + r.x + " " + r.y);
                 }
