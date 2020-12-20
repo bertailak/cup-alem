@@ -256,9 +256,9 @@ public class Main {
                 }
                 if (featuresT.contains("[" + (i) + ":" + (j) + "-")) {
                     if (volume[i][j] < 0) {
-                        volume[i][j] *= 1 + 0.35 / (pl.distance - 1);
+                        volume[i][j] *= 2 * v / (pl.distance - 1);
                     } else {
-                        volume[i][j] -= (v * 1.1) / (pl.distance - 1);
+                        volume[i][j] -= (v * v) / (pl.distance - 1);
                     }
                 }
                 if (featuresR.contains("[" + (i) + ":" + (j) + "-") && chars[i][j] != bomb) {
@@ -320,25 +320,27 @@ public class Main {
         return new Cell(row, col, 0, finded ? 1 : 0);
     }
 
-    static String GetTunnelPath(Cell pl, Cell pl2) {
-        String path = "[" + pl2.x + ":" + pl2.y + "]";
+    static String GetTunnelPath(Cell pl, int x, int y) {
+        String path = "";
 
-        while (true) {
-
-            int step = tunnel[pl2.x][pl2.y];
+        int j = 100;
+        while (j > 0) {
+            j--;
+            int step = tunnel[x][y];
+            path = path + "<" + x + ":" + y + "-" + tunnel[x][y];
 
             for (int i = 0; i < dx.length - 1; i++) {
-                if (isInside(pl.x + dx[i], pl.y + dy[i])
-                        && tunnel[pl2.x + dx[i]][pl.y + dy[i]] != Integer.MAX_VALUE
-                        && tunnel[pl2.x][pl.y] < tunnel[pl2.x + dx[i]][pl.y + dy[i]]) {
-                    pl2.x = pl2.x + dx[i];
-                    pl2.y = pl2.y + dy[i];
-                    path = path + "[" + pl2.x + ":" + pl2.y + "]";
+                if (isInside(x + dx[i], y + dy[i])
+                        && tunnel[x + dx[i]][y + dy[i]] != Integer.MAX_VALUE
+                        && tunnel[x][y] < tunnel[x + dx[i]][y + dy[i]]) {
+                    x = x + dx[i];
+                    y = y + dy[i];
                     break;
                 }
             }
 
-            if (tunnel[pl2.x][pl2.y] == 100 || (pl.x == pl2.x && pl.y == pl2.y)) {
+            if (tunnel[x][y] == 100
+                    || (false && pl.x == x && pl.y == y)) {
                 break;
             }
         }
@@ -501,7 +503,6 @@ public class Main {
         if (istest) {
             scan = new Scanner(new File("input.txt"));
         }
-        Cell prev = new Cell(0, 0, 0, 0);
 
         while (true) {
             int player_id, tick, n, p_id, x, y, param_1, param_2;
@@ -649,6 +650,7 @@ public class Main {
             printMapchar(chars);
             GetTunnel();
             Cell pl2path = shortestPath(grid, pl.x, pl.y, pl2.x, pl2.y);
+
             if (istest) {
                 System.out.println("pl2path.distance: " + pl2path.distance);
             }
@@ -656,17 +658,18 @@ public class Main {
             int direction = 4;
             String actionvalue = actions[direction];
 
-            if (pl2path.distance < Integer.MAX_VALUE && tunnel[pl2.x][pl2.y] < 100) {
-                String path = GetTunnelPath(pl, pl2);
-                if (istest) {
-                    System.out.println(path);
-                }
-                if (path.contains("[" + pl.x + ":" + pl.y + "]")) {
-                    System.out.println("contains");
-                    if (pl.bomb > 0) {
-                        direction = 5;
-                    }
-                }
+            String path = GetTunnelPath(pl, pl2.x, pl2.y);
+            if (istest) {
+                System.out.println("path: " + path);
+            }
+
+            if (pl2path.distance < Integer.MAX_VALUE
+                    && tunnel[pl2.x][pl2.y] > 0
+                    && tunnel[pl2.x][pl2.y] < 100
+                    && tunnel[pl2.x][pl2.y] < tunnel[pl.x][pl.y]
+                    && pl.bomb > 0 && path.contains("<" + pl.x + ":" + pl.y + "-")) {
+                direction = 5;
+                actionvalue = actions[direction];
             } else {
 //            if (pl2.teleport > 0 || pl2path.distance < 10) {
 //                SetTunnelClear(pl.x, pl.y);
@@ -687,8 +690,20 @@ public class Main {
 //                printMapchar(chars);
 //            }
 
-                if (pl.teleport > 0) {
-                    //aldina turup alu kerek
+                if (pl.teleport > 0 && pl.bomb > 0
+                        && tunnel[pl2.x][pl2.y] > 0
+                        && tunnel[pl2.x][pl2.y] < 100
+                        && path.split("<").length > 3) {
+//                    String path = GetTunnelPath(pl, pl2);
+                    pl2.bomb = Integer.parseInt(path.split("<")[1].split("-")[1]);
+                    System.out.println(pl2.bomb);
+                    for (String s1 : path.split("<")) {
+                        if (s1.length() > 0) {
+                            if (Integer.parseInt(s1.split("-")[1]) > pl2.bomb + 1) {
+                                actionvalue = "tp " + Integer.parseInt(s1.split("-")[0].split(":")[1]) + " " + Integer.parseInt(s1.split("-")[0].split(":")[0]);
+                            }
+                        }
+                    }
                 } else {
                     if (!isSafePos(pl.x, pl.y)) {
                         if (pl.distance < 5) {
@@ -732,28 +747,18 @@ public class Main {
                     if (pl.x == r.x && pl.y == r.y && pl.bomb > 0 && r.bomb > 0) {
                         direction = 5;
                     } else {
-                        if ((chars[pl.x - dx[direction]][pl.y - dy[direction]] == brick
+                        if (chars[pl.x - dx[direction]][pl.y - dy[direction]] == bomb && pl.jump > 0) {
+                            direction = 6;
+                        } else if ((chars[pl.x - dx[direction]][pl.y - dy[direction]] == brick
                                 || chars[pl.x - dx[direction]][pl.y - dy[direction]] == monster)
                                 && chars[pl.x][pl.y] != bomb
                                 && pl.bomb > 0) {
                             direction = 5;
                         }
                     }
-                }
-
-                if (prev.x == pl.x && prev.y == pl.y && prev.distance < 4) {
-                    if (pl.jump == 1) {
-                        actionvalue = actions[6];
-                    } else if (pl.teleport == 1) {
-                        Cell c = escape(chars, pl.x, pl.y, place);
-                        actionvalue = "tp " + c.y + " " + c.x;
-                    }
+                    actionvalue = actions[direction];
                 }
             }
-            prev.x = pl.x;
-            prev.y = pl.y;
-            prev.distance = direction;
-
             if (istest) {
                 System.out.println(actionvalue);
                 break;
